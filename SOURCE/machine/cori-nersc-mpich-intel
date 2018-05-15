@@ -1,0 +1,16 @@
+PROGRAM = ../dlpoly_ttm_mpich2
+
+MPI_HOME = /opt/cray/pe/mpt/7.4.1/gni/mpich-intel/15.0/
+CPPFLAGS = -I"$(MPI_HOME)/include"
+
+F90 = ftn
+F90FLAGS = -O2 -xHost -extend-source
+
+F77 = ftn
+F77FLAGS = $(F90FLAGS)
+
+LD = ftn  -I${MKLROOT}/include/intel64/lp64 -I${MKLROOT}/include
+LDFLAGS = $(F90FLAGS) -lstdc++ ${MKLROOT}/lib/intel64/libmkl_blas95_lp64.a ${MKLROOT}/lib/intel64/libmkl_lapack95_lp64.a -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_sequential.a -Wl,--end-group -lpthread -lm
+
+CXX = CC
+CXXFLAGS = -O2 -xHost

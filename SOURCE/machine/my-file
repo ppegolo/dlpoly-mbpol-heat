@@ -1,0 +1,21 @@
+PROGRAM = ../dlpoly_ttm_opt_mpi
+
+export OMPI_FC=ifort
+export OMPI_CC=icc
+export OMPI_CXX=icpc
+
+MPI_HOME = /opt/openmpi-1.6.5-intel
+CPPFLAGS = -DMPI -DSTRESS -I/usr/include/openmpi-x86_64  -DOPTORVIB  -DOPT # -DDO_RECALC_DIP  # -DOPTORVIB  -DOPT    # -DOPTORVIB   -DOPT    -DIPI 
+
+F90 = mpif90
+#F90FLAGS = -check all -traceback
+F90FLAGS = -O2 -xHost -extend-source
+
+F77 = mpif90
+F77FLAGS = $(F90FLAGS)
+
+LD = mpif90
+LDFLAGS = $(F90FLAGS) -lstdc++ -llapack -lblas
+
+CXX = mpicxx
+CXXFLAGS = -O2 -xHost

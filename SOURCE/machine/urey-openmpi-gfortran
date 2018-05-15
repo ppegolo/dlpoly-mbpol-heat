@@ -1,0 +1,16 @@
+PROGRAM = ../dlpoly_ttm_mpi_gfortran
+
+CPPFLAGS = -I$(MPI_INCLUDE)
+
+F90 = "$(MPI_HOME)/bin/mpif90"
+#F90FLAGS = -check all -traceback
+F90FLAGS = -O2 -march=native  -ffree-line-length-132 -finit-local-zero
+
+F77 = $(F90)
+F77FLAGS = $(F90FLAGS)
+
+LD = $(F90) 
+LDFLAGS = $(F90FLAGS) -lstdc++ -llapack -lblas
+
+CXX = "$(MPI_HOME)/bin/mpicxx"
+CXXFLAGS = -O0 -march=native

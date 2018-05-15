@@ -1,0 +1,21 @@
+#PROGRAM = ../dlpoly_ttm_bgq_xlf
+PROGRAM = ../dlpoly_ttm_bgq_xlf_wmbpol
+
+CPPFLAGS = -DBGQ -DAIX -I/bgsys/drivers/ppcfloor/comm/gcc.legacy/include/
+
+F77 = mpixlf90_r -qfixed=132
+F77FLAGS = -O3 -qunroll=yes -qtune=qp -qarch=qp -qsimd=auto -qessl -qhot -qipa 
+
+F90 = mpixlf90_r 
+F90FLAGS = $(F77FLAGS)
+
+LD = mpixlf90_r 
+#LDFLAGS = -O0 -g9 -C -qextchk -lstdc++ -qextname=mbpol_2b_cutoff
+LDFLAGS = -lstdc++
+
+CC = mpixlc_r 
+CXX = mpixlcxx_r 
+#CXXFLAGS = -O0 -C -DBGQ
+CXXFLAGS = -O3 -DBGQ
+
+

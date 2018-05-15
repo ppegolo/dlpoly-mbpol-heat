@@ -1,0 +1,19 @@
+PROGRAM = ../dlpoly_ttm_mpi_intel
+
+export OMPI_FC=ifort
+export OMPI_CC=icc
+export OMPI_CXX=icpc
+
+CPPFLAGS = -I$(MPI_INCLUDE) 
+
+F90 = $(MPI_HOME)/bin/mpif90
+F90FLAGS = -O2 -xHost -extend-source
+
+F77 = $(F90) 
+F77FLAGS = $(F90FLAGS)
+
+LD = $(F90)
+LDFLAGS = $(F90FLAGS) -lstdc++ -llapack -lblas
+
+CXX = $(MPI_HOME)/bin/mpicxx
+CXXFLAGS = -O2 -xHost

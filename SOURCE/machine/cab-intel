@@ -1,0 +1,22 @@
+PROGRAM = ../dlpoly_ttm_mpi_intel
+
+MPI_HOME = /usr/local/tools/mvapich-intel/
+CPPFLAGS = -DGLE -I"$(MPI_HOME)/include"
+
+F90 = "mpiifort"
+F90FLAGS = -O2 -extend-source
+#F90FLAGS = -O0 -g -traceback -C
+
+F77 = "mpiifort"
+F77FLAGS = $(F90FLAGS)
+
+MKLROOT = /usr/local/tools/mkl-10.3.8/mkl/
+LD = mpiifort
+LDFLAGS = $(F90FLAGS) -lstdc++ -L$(MKLROOT)/lib/intel64 -lmkl_scalapack_lp64  -lmkl_intel_lp64  -lmkl_sequential -lmkl_core -lmkl_blacs_lp64 -lpthread -lm -Wl,-rpath,$(MKLROOT)/lib/intel64 
+
+CC = mpiicc
+CXX = mpiicpc 
+CXXFLAGS = -O2 
+#CXXFLAGS = -O0 -C -g
+
+LDLIBS = #/usr/gapps/qmc/pimd/MB-POL/dlpoly2-ttm/SOURCE/CV_lib/libcv.a -lgsl  -lgslcblas -lm

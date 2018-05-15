@@ -1,0 +1,20 @@
+#PROGRAM = ../dlpoly_ttm_bgq_gnu
+PROGRAM = ../dlpoly_ttm_bgq_gnu_wmbpol
+
+CPPFLAGS = -DBGQ -I/bgsys/drivers/ppcfloor/comm/gcc.legacy/include/
+
+F77 = mpigfortran
+#F77FLAGS = -O0 -g -fbacktrace -fno-automatic -fbounds-check 
+F77FLAGS = -O2 -finit-local-zero -ffree-line-length-132
+
+F90 = mpigfortran
+F90FLAGS = $(F77FLAGS)
+
+LD = mpigfortran
+#LDFLAGS = -O0 -g -lstdc++ -fbacktrace
+LDFLAGS = -O2 -lstdc++
+
+CC = mpigcc
+CXX = mpig++
+#CXXFLAGS = -O0 -g -DBGQ
+CXXFLAGS = -O2 -DBGQ

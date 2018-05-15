@@ -1,0 +1,16 @@
+PROGRAM = ../dlpoly_ttm_mvapich2
+
+MPI_HOME = /opt/mvapich2/intel/ib
+CPPFLAGS =  -I"$(MPI_HOME)/include"
+
+F90 = "$(MPI_HOME)/bin/mpif90"
+F90FLAGS = -O2 -xHost -extend-source
+
+F77 = "$(MPI_HOME)/bin/mpif90"
+F77FLAGS = $(F90FLAGS)
+
+LD = "$(MPI_HOME)/bin/mpif90"
+LDFLAGS = $(F90FLAGS) -lstdc++ -L/opt/lapack/intel/lib -llapack -lblas
+
+CXX = "$(MPI_HOME)/bin/mpicxx"
+CXXFLAGS = -O2 -xHost
