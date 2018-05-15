@@ -1,0 +1,323 @@
+! 20 JUL 06 - IUCHI - COMMENT LJ-8 (KEEP FOR FURTURE PURPOSE)
+! 06 JUL 06 - IUCHI - ADD LJ-8 FORM
+!
+      subroutine lrcorrect
+     x  (idnode,imcon,keyfce,mxnode,natms,ntpatm,elrc,engunit,virlrc,
+     x  rcut,volm,lstvdw,ltpvdw,ltype,numtyp,numfrz,lstfrz,prmvdw,dens)
+
+c*************************************************************************
+c
+c     DL_POLY subroutine to evaluate long-range corrections to
+c     pressure and energy in a periodic system.
+c
+c     copyright daresbury laboratory 1993
+c
+c     author -       t. forester may 1993
+c
+c     wl
+c     2001/05/30 12:40:10
+c     1.5
+c     Exp
+!
+!     Last updated: 20 July 2006 by S. Iuchi
+c
+c***************************************************************************
+#ifdef HEAT_CURRENT
+      use heatcurrent, only: update_energy_lrcorrect,
+     x                       update_stress_lrcorrect
+#endif /* HEAT_CURRENT */
+
+      include 'dl_params.inc'
+
+      dimension numtyp(mxsvdw),numfrz(mxsvdw)
+      dimension prmvdw(mxvdw,mxpvdw),ltpvdw(mxvdw),lstvdw(mxvdw)
+      dimension dens(mxsvdw),ltype(mxatms),lstfrz(mxatms)
+
+c     12-6 potential
+
+      el1(r,a,b) = a/(9.d0*r**9) - b/(3.d0*r**3)
+      pl1(r,a,b) = 12.d0*a/(9.d0*r**9)- 6.d0*b/(3.d0*r**3)
+
+c     Lennard Jones potential
+
+      el2(r,a,b) = 4.d0*a*(b**12/(9.d0*r**9) - b**6/(3.d0*r**3))
+      pl2(r,a,b) = 4.d0*a*(12.d0*b**12/(9.d0*r**9) - 2.d0*b**6/(r**3))
+
+c     n - m potential
+
+      el3(r,a,b,c,d) = a/(b-c)*(c*d**b/((b-3.d0)*r**(b-3.d0))
+     x  - b*d**c/((c-3.0d0)*r**(c-3.d0)))
+      pl3(r,a,b,c,d) = a/(b-c)*b*c*(d**b/((b-3.d0)*r**(b-3.d0))
+     x  - d**c/((c-3.0d0)*r**(c-3.d0)))
+
+c     buckingham exp - 6 potential
+
+      el4(r,c) = -c/(3.d0*r**3)
+      pl4(r,c) = -2.d0*c/(r**3)
+
+c     born huggins meyer exp - 6 - 8  potential
+
+      el5(r,d,e) = -d/(3.d0*r**3) - e/(5.d0*r**5)
+      pl5(r,d,e) = -2.d0*d/(r**3) - 8.d0*e/(5.d0*r**5)
+
+c     hydrogen bond  12 - 10 potential
+
+      el6(r,a,b) = a/(9.d0*r**9) - b/(7.d0*r**7)
+      pl6(r,a,b) = 12.d0*a/(9.d0*r**9) - 1.d1*b/(7.d0*r**7)
+c
+c     ttm2 water 12-10-6-exp potential
+c     exp terms are negligible for corrections
+      el9(r,a,b,c) = a/(9.0d0*r**9)+b/(7.0d0*r**7)+c/(3.0d0*r**3)
+      pl9(r,a,b,c) = 12.0*a/(9.0d0*r**9)+10.0d0*b/(7.0d0*r**7)
+     x                 + 2.0d0*c/(r**3)
+
+#ifdef VAMPIR
+      call VTBEGIN(148, ierr)
+#endif
+
+      twopi = 2.0d0*pi
+c
+c     initalise counter arrays
+
+      do i = 1,ntpatm
+
+        numtyp(i) = 0
+        numfrz(i) = 0
+
+      enddo
+c
+c     evaluate number density in system
+
+      do i = 1, natms
+
+        ka = ltype(i)
+        numtyp(ka) = numtyp(ka)+1
+        if(lstfrz(i).ne.0)numfrz(ka)=numfrz(ka)+1
+
+      enddo
+
+c
+c     number densities
+
+      do i = 1,ntpatm
+
+        dens(i) = dble(numtyp(i))/volm
+
+      enddo
+
+c
+c     long range corrections to energy and pressure
+
+      plrc = 0.d0
+      elrc = 0.d0
+
+      if(imcon.ne.0.and.imcon.ne.6) then
+
+        if(mod(keyfce,2).eq.1) then
+
+          ivdw = 0
+
+          do i = 1, ntpatm
+
+            do j = 1,i
+
+              eadd = 0.d0
+              padd = 0.d0
+
+              ivdw = ivdw + 1
+              k = lstvdw(ivdw)
+
+              if(ltpvdw(k).eq.0) then
+
+                eadd = prmvdw(k,1)
+                padd =-prmvdw(k,2)
+
+              else if(ltpvdw(k).eq.1) then
+
+                eadd = el1(rcut,prmvdw(k,1),prmvdw(k,2))
+                padd = pl1(rcut,prmvdw(k,1),prmvdw(k,2))
+
+              else if(ltpvdw(k).eq.2) then
+
+                eadd = el2(rcut,prmvdw(k,1),prmvdw(k,2))
+                padd = pl2(rcut,prmvdw(k,1),prmvdw(k,2))
+
+              else if(ltpvdw(k).eq.3) then
+
+                eadd = el3(rcut,prmvdw(k,1),prmvdw(k,2),
+     x            prmvdw(k,3),prmvdw(k,4))
+                padd = pl3(rcut,prmvdw(k,1),prmvdw(k,2),
+     x            prmvdw(k,3),prmvdw(k,4))
+
+              else if(ltpvdw(k).eq.4) then
+
+                eadd = el4(rcut,prmvdw(k,3))
+                padd = pl4(rcut,prmvdw(k,3))
+
+              else if(ltpvdw(k).eq.5) then
+
+                eadd = el5(rcut,prmvdw(k,4),prmvdw(k,5))
+                padd = pl5(rcut,prmvdw(k,4),prmvdw(k,5))
+
+              else if(ltpvdw(k).eq.6) then
+
+                eadd = el6(rcut,prmvdw(k,1),prmvdw(k,2))
+                padd = pl6(rcut,prmvdw(k,1),prmvdw(k,2))
+
+              else if(ltpvdw(k).eq.7) then
+
+                eadd = 0.d0
+                padd = 0.d0
+
+c             for lj-8 type
+              else if(ltpvdw(k).eq.9) then
+                 eadd = el9(rcut,prmvdw(k,1),prmvdw(k,2),prmvdw(k,3))
+                 padd = pl9(rcut,prmvdw(k,1),prmvdw(k,2),prmvdw(k,3))
+
+c             for TTM4-F type
+              else if(ltpvdw(k).eq.11) then
+                 eadd=el11(rcut,prmvdw(k,1),prmvdw(k,2),prmvdw(k,3),
+     x                          prmvdw(k,4),prmvdw(k,5),prmvdw(k,6))
+                 padd=pl11(rcut,prmvdw(k,1),prmvdw(k,2),prmvdw(k,3),
+     x                          prmvdw(k,4),prmvdw(k,5),prmvdw(k,6))
+
+c             6/8 with Tang-Toennies
+              else if(ltpvdw(k).eq.12) then
+
+                eadd = el12(rcut,prmvdw(k,1),prmvdw(k,2),
+     x                           prmvdw(k,3),prmvdw(k,4))
+                padd = pl12(rcut,prmvdw(k,1),prmvdw(k,2),
+     x                           prmvdw(k,3),prmvdw(k,4))
+
+              else if(ltpvdw(k).eq.13) then
+
+                eadd = el13(rcut,prmvdw(k,3),prmvdw(k,4))
+                padd = pl13(rcut,prmvdw(k,3),prmvdw(k,4))
+
+              endif
+
+              if(i.ne.j) then
+                eadd = eadd*2.d0
+                padd = padd*2.d0
+              endif
+
+              denprd=twopi*(dble(numtyp(i))*dble(numtyp(j))-
+     x               dble(numfrz(i))*dble(numfrz(j)))/volm**2
+              elrc = elrc + volm*denprd*eadd
+              plrc = plrc + denprd*padd/3.d0
+
+            enddo
+
+          enddo
+
+        endif
+
+      endif
+
+!     if(idnode.eq.0) write(nrite,
+!    x  "(/,/,'long range correction for: vdw energy  ',e15.6,/,
+!    x  25x,': vdw pressure',e15.6)") elrc/engunit,plrc*prsunt
+c
+c     convert plrc to a viral term
+
+      virlrc = plrc*(-3.d0*volm)
+
+#ifdef HEAT_CURRENT
+! add the same long-range energy and stress contribution to each atom.
+      do i=1,mxatms
+        call update_energy_lrcorrect(i,elrc/mxatms)
+        call update_stress_lrcorrect(i,1,1,-virlrc/(3.d0*mxatms))
+        call update_stress_lrcorrect(i,2,2,-virlrc/(3.d0*mxatms))
+        call update_stress_lrcorrect(i,3,3,-virlrc/(3.d0*mxatms))
+      enddo
+#endif /* HEAT_CURRENT */
+
+#ifdef VAMPIR
+      call VTEND(148, ierr)
+#endif
+      return
+
+      contains
+
+!
+!     TTM4-F dispersion potential
+!
+
+      real(8) function el11(r,A6,A8,A10,A12,A14,A16)
+
+         implicit none
+
+         real(8) :: r,A6,A8,A10,A12,A14,A16
+
+         real(8) :: x1, x
+
+         x1 = 1.d0/r
+         x = x1*x1
+
+         el11 = x1*x*(A6/3.d0 + (A8/5.d0 + (A10/7.d0
+     x        + (A12/9.d0 + (A14/11.d0 + A16*x/13.d0)*x)*x)*x)*x)
+
+      end function el11
+
+      real(8) function pl11(r,A6,A8,A10,A12,A14,A16)
+
+         implicit none
+
+         real(8) :: r,A6,A8,A10,A12,A14,A16
+
+         real(8) :: x1, x
+
+         x1 = 1.d0/r
+         x = x1*x1
+
+         pl11 = 2.d0*x1*x*(A6 + ((4.d0/5.d0)*A8 + ((5.d0/7.d0)*A10
+     x        + ((2.d0/3.d0)*A12 + ((7.d0/11.d0)*A14
+     x        + (8.d0/13.d0)*A16*x)*x)*x)*x)*x)
+
+      end function pl11
+
+!
+! Tang-Toennies damped 1/r^6 and 1/r^8
+!
+
+      real(8) function el12(r,c6,a6,c8,a8)
+         implicit none
+         real(8), intent(in) :: r,c6,a6,c8,a8
+         real(8) :: tang_toennies_lr
+
+         el12 = -c6*a6**3*tang_toennies_lr(6, a6*r)
+     x          -c8*a8**5*tang_toennies_lr(8, a8*r)
+      end function el12
+
+      real(8) function pl12(r,c6,a6,c8,a8)
+         implicit none
+         real(8), intent(in) :: r,c6,a6,c8,a8
+         real(8) :: tang_toennies
+
+         pl12 = 3*el12(r,c6,a6,c8,a8)
+     x        - c6*tang_toennies(6, a6*r)/r**3
+     x        - c8*tang_toennies(8, a8*r)/r**5
+      end function pl12
+
+!
+! Tang-Toennies damped 1/r^6 and 1/r^8
+!
+
+      real(8) function el13(r,c6,a6)
+         implicit none
+         real(8), intent(in) :: r,c6,a6
+         real(8) :: tang_toennies_lr
+
+         el13 = -c6*a6**3*tang_toennies_lr(6, a6*r)
+      end function el13
+
+      real(8) function pl13(r,c6,a6)
+         implicit none
+         real(8), intent(in) :: r,c6,a6
+         real(8) :: tang_toennies
+
+         pl13 = 3*el13(r,c6,a6)
+     x        - c6*tang_toennies(6, a6*r)/r**3
+      end function pl13
+
+      end
