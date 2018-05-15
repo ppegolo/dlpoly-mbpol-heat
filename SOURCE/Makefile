@@ -13,7 +13,7 @@
 #include machine/vulcan-xlf
 #include machine/cori-nersc-mpich-intel
 #include machine/urey-openmpi-gfortran
-include machine/urey-openmpi-intel
+#include machine/urey-openmpi-intel
 #include machine/comet-mvapich2-intel
 #include machine/stampede-mvapich2-intel
 #include machine/gordon-mvapich2-intel
@@ -25,6 +25,7 @@ include machine/urey-openmpi-intel
 #include machine/dod-thunder-mpich-intel
 #include machine/dod-topaz-mpich-intel
 #include machine/ubuntu
+include machine/sissa-hpc-intel
 
 # common variables
 CC  = gcc 
