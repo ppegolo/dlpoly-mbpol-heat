@@ -4,7 +4,7 @@
 #
 # === Makefile for DLPOLY with TTM2 ===
 #
-# Last updated: Jan 2, 2017 
+# Last updated: May 15, 2018 
 # 
 
 # target specific variables
@@ -48,7 +48,7 @@ DEBUG =
 # --- definitions of object files ---
 #
 
-OBJ_ALL = module.o angfrc.o bndfrc.o cfgscan.o corshl.o coul0.o coul4.o \
+OBJ_ALL = module.o heatcurrent.o angfrc.o bndfrc.o cfgscan.o corshl.o coul0.o coul4.o \
 	coul2.o coul3.o conscan.o dblstr.o dcell.o diffsn0.o \
 	diffsn1.o dlpoly.o duni.o error.o ewald1.o ewald3.o \
 	exclude.o exclude_atom.o fldscan.o exclude_link.o \
@@ -124,7 +124,7 @@ lrcmetal.o multiple.o multipleneu.o parlink.o parlinkneu.o parlst.o \
 parneulst.o parset.o qdetermine.o quatqnch.o result.o revive.o shlfrc.o \
 shlqnch.o static.o strucopt.o sysbook.o sysdef.o \
 sysinit.o tethfrc.o thbfrc.o timchk.o traject.o traject_u.o \
-ttm2list.o vertest.o vscaleg.o xscale.o zden0.o module.o gsync.o \
+ttm2list.o vertest.o vscaleg.o xscale.o zden0.o module.o heatcurrent.o gsync.o \
 getrec.o intstr.o dblstr.o gimax.o gisum.o pdsum.o merge.o \
 ewald1.o ewald1p.o ewald1cp.o ewald2.o ewald2p.o ewald2cp.o \
 ewald3.o ewald3p.o ewald3cp.o ewald4.o ewald4p.o ewald4cp.o \
