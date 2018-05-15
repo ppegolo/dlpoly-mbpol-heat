@@ -1,4 +1,4 @@
-!a 30 NOV 05 - IUCHI - ESP FOR DMS
+! 30 NOV 05 - IUCHI - ESP FOR DMS
 ! 09 NOV 05 - IUCHI - INTRODUCING FORCE DECOMPOSITION
 ! 09 NOV 05 - IUCHI - ADD USE MODULE TTM_FORCES
 !
@@ -93,13 +93,6 @@ c
       real(8) :: strs1k, strs2k, strs3k, strs4k, strs5k, strs6k
       real(8) :: strs7k, strs8k, strs9k
       real(8) :: dipvec(1:3), kvec(1:3)
-
-      real(8) :: Btensor(9), akv2
-      real(8) :: Cqi, Sqi, CMi(3), SMi(3)
-      real(8) :: Qc, Qs, Mc(3), Ms(3)
-      real(8) :: stressCC(9), stressDD(9)
-      real(8) :: stressCD(9), stressDC(9)
-      real(8) :: dpkCMi, dpkMc, dpkMs, dpkSMi
 #endif /* HEAT_CURRENT */
 
       save newjob,engsic
@@ -370,7 +363,6 @@ c     calculate exp(ikr) terms and product with charges
 
                       ckc(i)=tchge*ckr(i)
                       cks(i)=tchge*skr(i)
-
 c
 c     calculate dipole sums
 
@@ -537,7 +529,6 @@ c     calculate akk coefficients
                     endif
                     bkk=akk
                     akv=2.d0*akk*(rrksq-ralph)
-                    akv2=2.d0*(rrksq-ralph)
 c
 c     accumulate potential energy and virial terms
 
@@ -546,130 +537,54 @@ c     accumulate potential energy and virial terms
                   if (iflag.eq.1) then
                     scalefactor = 2.d0*rvolm*r4pie0/epsq
                     i = 0
-                    kvec   = (/ rkx3, rky3, rkz3 /)
-                    Btensor(1) = 1 - akv2*kvec(1)*kvec(1)
-                    Btensor(2) =   - akv2*kvec(1)*kvec(2)
-                    Btensor(3) =   - akv2*kvec(1)*kvec(3)
-                    Btensor(4) = Btensor(2)
-                    Btensor(5) = 1 - akv2*kvec(2)*kvec(2)
-                    Btensor(6) =   - akv2*kvec(2)*kvec(3)
-                    Btensor(7) = Btensor(3)
-                    Btensor(8) = Btensor(6)
-                    Btensor(9) = 1 - akv2*kvec(3)*kvec(3)
-
-                    Qc = ckcs
-                    Qs = ckss
-                    Mc = (/dmuckrsx,dmuckrsy,dmuckrsz/)
-                    Ms = (/dmuskrsx,dmuskrsy,dmuskrsz/)
-
                     do j = iatm0, iatm1
                       i = i + 1
                       dipvec = (/ dipx(j), dipy(j), dipz(j) /)
+                      kvec   = (/ rkx3   , rky3   , rkz3    /)
                       dipdotk = dot_product(dipvec,kvec)
+                      smu1i=ckc(i)-dipdotk*skr(i)
+                      smu2i=cks(i)+dipdotk*ckr(i)
+                      smu1smu2i=ckc(i)*(ckcs-2*skdmuskrs)+
+     x                          dipdotk*skr(i)*skdmuskrs+
+     x                          cks(i)*(ckss+2*skdmuckrs)+
+     x                          dipdotk*ckr(i)*skdmuckrs
 
-                      Cqi = ckc(i)
-                      Sqi = cks(i)
-                      CMi = dipvec*ckr(i)
-                      SMi = dipvec*skr(i)
-                      dpkCMi = dot_product(kvec,CMi)
-                      dpkSMi = dot_product(kvec,SMi)
-                      dpkMc = dot_product(kvec,Mc)
-                      dpkMs = dot_product(kvec,Ms)
+              strs1k = scalefactor*((akk-akv*kvec(1)*kvec(1))
+     x        *smu1smu2i-2*akk*kvec(1)*dmuskrsx*smu1i+2*akk*
+     x        kvec(1)*dmuckrsx*smu2i)
 
-                      stressCC = Btensor*(Cqi*Qc+Sqi*Qs)
+              strs2k = scalefactor*((-akv*kvec(1)*kvec(2))
+     x        *smu1smu2i-2*akk*kvec(1)*dmuskrsy*smu1i+2*akk*
+     x        kvec(1)*dmuckrsy*smu2i)
 
-                      stressCD = Btensor*(Sqi*dpkMc - Cqi*dpkMs -
-     x                dpkSMi*Qc + dpkCMi*Qs)
+              strs3k = scalefactor*((-akv*kvec(1)*kvec(3))
+     x        *smu1smu2i-2*akk*kvec(1)*dmuskrsz*smu1i+2*akk*
+     x        kvec(1)*dmuckrsz*smu2i)
 
-                      stressCD(1) = stressCD(1) + Sqi*kvec(1)*Mc(1) -
-     x                Cqi*kvec(1)*Ms(1) - kvec(1)*SMi(1)*Qc +
-     x                kvec(1)*CMi(1)*Qs
+              strs4k = scalefactor*((-akv*kvec(2)*kvec(1))
+     x        *smu1smu2i-2*akk*kvec(2)*dmuskrsx*smu1i+2*akk*
+     x        kvec(2)*dmuckrsx*smu2i)
 
-                      stressCD(2) = stressCD(2) + Sqi*kvec(1)*Mc(2) -
-     x                Cqi*kvec(1)*Ms(2) - kvec(1)*SMi(2)*Qc +
-     x                kvec(1)*CMi(2)*Qs
+              strs5k = scalefactor*((akk-akv*kvec(2)*kvec(2))
+     x        *smu1smu2i-2*akk*kvec(2)*dmuskrsy*smu1i+2*akk*
+     x        kvec(2)*dmuckrsy*smu2i)
 
-                      stressCD(3) = stressCD(3) + Sqi*kvec(1)*Mc(3) -
-     x                Cqi*kvec(1)*Ms(3) - kvec(1)*SMi(3)*Qc +
-     x                kvec(1)*CMi(3)*Qs
+              strs6k = scalefactor*((-akv*kvec(2)*kvec(3))
+     x        *smu1smu2i-2*akk*kvec(2)*dmuskrsz*smu1i+2*akk*
+     x        kvec(2)*dmuckrsz*smu2i)
 
-                      stressCD(4) = stressCD(4) + Sqi*kvec(2)*Mc(1) -
-     x                Cqi*kvec(2)*Ms(1) - kvec(2)*SMi(1)*Qc +
-     x                kvec(2)*CMi(1)*Qs
+              strs7k = scalefactor*((-akv*kvec(3)*kvec(1))
+     x        *smu1smu2i-2*akk*kvec(3)*dmuskrsx*smu1i+2*akk*
+     x        kvec(3)*dmuckrsx*smu2i)
 
-                      stressCD(5) = stressCD(5) + Sqi*kvec(2)*Mc(2) -
-     x                Cqi*kvec(2)*Ms(2) - kvec(2)*SMi(2)*Qc +
-     x                kvec(2)*CMi(2)*Qs
+              strs8k = scalefactor*((-akv*kvec(3)*kvec(2))
+     x        *smu1smu2i-2*akk*kvec(3)*dmuskrsy*smu1i+2*akk*
+     x        kvec(3)*dmuckrsy*smu2i)
 
-                      stressCD(6) = stressCD(6) + Sqi*kvec(2)*Mc(3) -
-     x                Cqi*kvec(2)*Ms(3) - kvec(2)*SMi(3)*Qc +
-     x                kvec(2)*CMi(3)*Qs
-
-                      stressCD(7) = stressCD(7) + Sqi*kvec(3)*Mc(1) -
-     x                Cqi*kvec(3)*Ms(1) - kvec(3)*SMi(1)*Qc +
-     x                kvec(3)*CMi(1)*Qs
-
-                      stressCD(8) = stressCD(8) + Sqi*kvec(3)*Mc(2) -
-     x                Cqi*kvec(3)*Ms(2) - kvec(3)*SMi(2)*Qc +
-     x                kvec(3)*CMi(2)*Qs
-
-                      stressCD(9) = stressCD(9) + Sqi*kvec(3)*Mc(3) -
-     x                Cqi*kvec(3)*Ms(3) - kvec(3)*SMi(3)*Qc +
-     x                kvec(3)*CMi(3)*Qs
-
-                      stressDD = Btensor*(dpkCMi*dpkMc +
-     x                dpkSMi*dpkMs)
-
-                      stressDD(1) = stressDD(1) + kvec(1)*CMi(1)*dpkMc +
-     x                kvec(1)*SMi(1)*dpkMs + dpkCMi*kvec(1)*Mc(1) +
-     x                dpkSMi*kvec(1)*Ms(1)
-
-                      stressDD(2) = stressDD(2) + kvec(1)*CMi(2)*dpkMc +
-     x                kvec(1)*SMi(2)*dpkMs + dpkCMi*kvec(1)*Mc(2) +
-     x                dpkSMi*kvec(1)*Ms(2)
-
-                      stressDD(3) = stressDD(3) + kvec(1)*CMi(3)*dpkMc +
-     x                kvec(1)*SMi(3)*dpkMs + dpkCMi*kvec(1)*Mc(3) +
-     x                dpkSMi*kvec(1)*Ms(3)
-
-                      stressDD(4) = stressDD(4) + kvec(2)*CMi(1)*dpkMc +
-     x                kvec(2)*SMi(1)*dpkMs + dpkCMi*kvec(2)*Mc(1) +
-     x                dpkSMi*kvec(2)*Ms(1)
-
-                      stressDD(5) = stressDD(5) + kvec(2)*CMi(2)*dpkMc +
-     x                kvec(2)*SMi(2)*dpkMs + dpkCMi*kvec(2)*Mc(2) +
-     x                dpkSMi*kvec(2)*Ms(2)
-
-                      stressDD(6) = stressDD(6) + kvec(2)*CMi(3)*dpkMc +
-     x                kvec(2)*SMi(3)*dpkMs + dpkCMi*kvec(2)*Mc(3) +
-     x                dpkSMi*kvec(2)*Ms(3)
-
-                      stressDD(7) = stressDD(7) + kvec(3)*CMi(1)*dpkMc +
-     x                kvec(3)*SMi(1)*dpkMs + dpkCMi*kvec(3)*Mc(1) +
-     x                dpkSMi*kvec(3)*Ms(1)
-
-                      stressDD(8) = stressDD(8) + kvec(3)*CMi(2)*dpkMc +
-     x                kvec(3)*SMi(2)*dpkMs + dpkCMi*kvec(3)*Mc(2) +
-     x                dpkSMi*kvec(3)*Ms(2)
-
-                      stressDD(9) = stressDD(9) + kvec(3)*CMi(3)*dpkMc +
-     x                kvec(3)*SMi(3)*dpkMs + dpkCMi*kvec(3)*Mc(3) +
-     x                dpkSMi*kvec(3)*Ms(3)
-
-                      stressCC = stressCC*scalefactor*akk
-                      stressCD = stressCD*scalefactor*akk
-                      stressDD = stressDD*scalefactor*akk
-
-                     strs1k = stressCC(1) + stressCD(1) + stressDD(1)
-                     strs2k = stressCC(2) + stressCD(2) + stressDD(2)
-                     strs3k = stressCC(3) + stressCD(3) + stressDD(3)
-                     strs4k = stressCC(4) + stressCD(4) + stressDD(4)
-                     strs5k = stressCC(5) + stressCD(5) + stressDD(5)
-                     strs6k = stressCC(6) + stressCD(6) + stressDD(6)
-                     strs7k = stressCC(7) + stressCD(7) + stressDD(7)
-                     strs8k = stressCC(8) + stressCD(8) + stressDD(8)
-                     strs9k = stressCC(9) + stressCD(9) + stressDD(9)
-
+              strs9k = scalefactor*((akk-akv*kvec(3)*kvec(3))
+     x        *smu1smu2i-2*akk*kvec(3)*dmuskrsz*smu1i+2*akk*
+     x        kvec(3)*dmuckrsz*smu2i)
+                      ! PP_: 13-04-2018: j should be the correct atomic index
                       call update_stress_ew1p(j,1,1,strs1k)
                       call update_stress_ew1p(j,1,2,strs2k)
                       call update_stress_ew1p(j,1,3,strs3k)
@@ -694,8 +609,8 @@ c     accumulate potential energy and virial terms
                     virprs=akv*(summu1*summu1+summu2*summu2)
 
                     omg(1)=omg(1)-virprs*rkx3*rkx3
-!     x                     -2.d0*akk*rkx3*dmuskrsx*summu1
-!     x                     +2.d0*akk*rkx3*dmuckrsx*summu2
+     x                     -2.d0*akk*rkx3*dmuskrsx*summu1
+     x                     +2.d0*akk*rkx3*dmuckrsx*summu2
                     omg(5)=omg(5)-virprs*rky3*rky3
      x                     -2.d0*akk*rky3*dmuskrsy*summu1
      x                     +2.d0*akk*rky3*dmuckrsy*summu2
@@ -992,6 +907,7 @@ c     global exchange of electric field
 #ifdef STRESS
 c
 c     calculate stress tensor (symmetrical)
+
       stress(1) = stress(1)+scal1*(omg(1)+eng1)
       stress(2) = stress(2)+scal1*omg(2)
       stress(3) = stress(3)+scal1*omg(3)

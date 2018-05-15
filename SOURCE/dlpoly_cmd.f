@@ -95,7 +95,6 @@ c
      x                              potential_energy_per_atom,
      x                              compute_heat_flux,
      x                              write_heat_flux,
-     x                              write_heat_autocorr,
      x                              stress_per_atom,
      x                              total_energy_cpe,
      x                              total_potential_energy,
@@ -104,13 +103,16 @@ c
      x                              final_sum_heat_flux,
      x                              update_kinetic_energy, !PPnote_: remove if unnecessary
      x                              total_stress,
-     x                              compute_j1,
-     x                              compute_j2,
      x                              write_energy,
      x                              write_stress,
      x                              distribute_stress,
-     x                              distribute_energy
-#endif
+     x                              distribute_energy,
+     x                              deallocate_heat
+#endif /* HEAT_CURRENT */
+#ifdef HEAT_CHECK
+      use heat_check, only:
+     x                              write_check
+#endif /* HEAT_CHECK */
 c
 c----------------------------------------------------------------
 ! PIMD/CMD
@@ -3086,11 +3088,6 @@ c        Output energies and positions for PIMD.
                end if ! lhead
             end if ! lpolar
 
-#ifdef HEAT_CURRENT
-          call potential_energy_per_atom()
-          call stress_per_atom()
-#endif /* HEAT_CURRENT */
-
             if (pimd_head) then
 
                call timchk(0,timepb1)
@@ -3196,7 +3193,6 @@ c             Transform cartesian positions into normal mode positions.
 #ifdef HEAT_CURRENT
         call potential_energy_per_atom()
         call stress_per_atom()
-
         call compute_heat_flux(vxx,vyy,vzz)
         call final_sum_heat_flux()
         call final_sum()
@@ -3208,7 +3204,10 @@ c             Transform cartesian positions into normal mode positions.
      x            imcon,cell,xxx,yyy,zzz,lcavity)
 
 #ifdef HEAT_CURRENT
-            call write_heat_flux(time)
+               call write_heat_flux(time)
+#ifdef HEAT_CHECK
+               call write_check(time,conv_energy,prsunt/stpvol)
+#endif /* HEAT_CHECK */
 #endif /* HEAT_CURRENT */
 
                call centroid_write_config
@@ -3249,6 +3248,8 @@ c     x                                 weight,listttm2,xxx,yyy,zzz)
 
          end if ! mod(nstep, istraj).eq.0
          end if ! ltraj
+
+         ! PP_NOTE
 
       else ! cmd_run
 
@@ -3317,8 +3318,12 @@ c        Output energies and positions & velocities for path-centroid.
 
             if ( pimd_head ) then
 
-               open( file_cmd, file='STATIS_CMD', position='append')
-               open( file_nh, file='STATIS_NH', position='append')
+               open(file_cmd,file='STATIS_CMD', position='append')
+               open(file_nh,file='STATIS_NH', position='append')
+               open(file_stress,file='STATIS_STRESS',position='append')
+
+               write(file_stress,'(f12.5,10f10.5)')
+     x               time, P_pimd*prsunt, stress_pimd(1:9)
 
                write(file_cmd,'(i12,5f18.5)')
      x              nstep, time,
@@ -3398,7 +3403,10 @@ c             Transform cartesian positions into normal mode positions.
            if (lhead) then
 
 #ifdef HEAT_CURRENT
-         call write_heat_flux(time)
+              call write_heat_flux(time)
+#ifdef HEAT_CHECK
+              call write_check(time,conv_energy,prsunt/stpvol)
+#endif /* HEAT_CHECK */
 #endif /* HEAT_CURRENT */
 
               if (w_bead) then
@@ -3501,6 +3509,10 @@ c***********************************************************************
             deallocate( dip3x, dip3y, dip3z )
          end if
       end if
+
+#ifdef HEAT_CURRENT
+      call deallocate_heat()
+#endif /* HEAT_CURRENT */
 
 #ifdef DO_2D_IR
       call centroid_2D_IR_fini()

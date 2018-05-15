@@ -213,18 +213,6 @@ contains
     atomic_energy_polar(iatom) = atomic_energy_polar(iatom) + energy_per_atom
   end subroutine update_energy_polar
   !
-  ! subroutine update_stress(iatom,icart1,icart2,stress_per_atom)
-  !   integer, intent(in) :: iatom, icart1, icart2  ! atomic index, cartesian indeces
-  !   real(8), intent(in) :: stress_per_atom!, velocity_i_cart
-  !   atomic_stress(iatom,icart1,icart2) = atomic_stress(iatom,icart1,icart2) + stress_per_atom
-  ! end subroutine update_stress
-  ! !
-  ! subroutine update_energy(iatom,energy_per_atom)
-  !   integer, intent(in) :: iatom! atomic index, cartesian index
-  !   real(8), intent(in) :: energy_per_atom
-  !   atomic_energy(iatom) = atomic_energy(iatom) + energy_per_atom
-  ! end subroutine update_energy
-  !
   subroutine total_energy_ang(entot)
     real(8) :: entot
     entot = sum(atomic_energy_ang)
@@ -457,53 +445,15 @@ contains
       vtmp = (/ vxx(iatm), vyy(iatm), vzz(iatm) /)
       eng = (atomic_kinetic_energy(iatm)+atomic_potential_energy(iatm))
       j1 = j1 + eng*vtmp
-      j2(1) = j2(1) - atomic_stress(iatm,1,1)*vtmp(1) - atomic_stress(iatm,1,2)*vtmp(2)&
-      - atomic_stress(iatm,1,3)*vtmp(3)
-      j2(2) = j2(2) - atomic_stress(iatm,1,2)*vtmp(1) - atomic_stress(iatm,2,2)*vtmp(2)&
-      - atomic_stress(iatm,2,3)*vtmp(3)
-      j2(3) = j2(3) - atomic_stress(iatm,1,3)*vtmp(1) - atomic_stress(iatm,2,3)*vtmp(2)&
-      - atomic_stress(iatm,3,3)*vtmp(3)
+      j2(1) = j2(1) + atomic_stress(iatm,1,1)*vtmp(1) + atomic_stress(iatm,1,2)*vtmp(2)&
+      + atomic_stress(iatm,1,3)*vtmp(3)
+      j2(2) = j2(2) + atomic_stress(iatm,1,2)*vtmp(1) + atomic_stress(iatm,2,2)*vtmp(2)&
+      + atomic_stress(iatm,2,3)*vtmp(3)
+      j2(3) = j2(3) + atomic_stress(iatm,1,3)*vtmp(1) + atomic_stress(iatm,2,3)*vtmp(2)&
+      + atomic_stress(iatm,3,3)*vtmp(3)
     enddo
-    ! jmpi = (/ j1(1)+j2(1),j1(2)+j2(2),j1(3)+j2(3),0.d0,0.d0,0.d0/)
-    ! call gdsum(jmpi(1),3,jmpi(4))
-    jtot = j1+j2!jmpi(1:3)
+    jtot = j1 + j2
   end subroutine compute_heat_flux
-
-  subroutine compute_j1(vxx,vyy,vzz)
-    real(8), dimension(1:mxatms), intent(in) :: vxx, vyy, vzz
-    integer :: iatm, icart, jcart
-    real(8) :: vtmp(3), eng
-    j1=0
-    do iatm=1,mxatms
-      vtmp = (/ vxx(iatm), vyy(iatm), vzz(iatm) /)
-      eng = (atomic_kinetic_energy(iatm)+atomic_potential_energy(iatm))
-      j1 = j1 + eng*vtmp
-      j2(1) = j2(1) - atomic_stress(iatm,1,1)*vtmp(1) - atomic_stress(iatm,1,2)*vtmp(2)&
-      - atomic_stress(iatm,1,3)*vtmp(3)
-      j2(2) = j2(2) - atomic_stress(iatm,1,2)*vtmp(1) - atomic_stress(iatm,2,2)*vtmp(2)&
-      - atomic_stress(iatm,2,3)*vtmp(3)
-      j2(3) = j2(3) - atomic_stress(iatm,1,3)*vtmp(1) - atomic_stress(iatm,2,3)*vtmp(2)&
-      - atomic_stress(iatm,3,3)*vtmp(3)
-    enddo
-  end subroutine compute_j1
-
-  subroutine compute_j2(vxx,vyy,vzz)
-    real(8), dimension(1:mxatms), intent(in) :: vxx, vyy, vzz
-    integer :: iatm
-    real(8) :: vtmp(3)
-    j2=0
-    do iatm=1,mxatms
-      vtmp = (/ vxx(iatm), vyy(iatm), vzz(iatm) /)
-      j2(1) = j2(1) - atomic_stress(iatm,1,1)*vtmp(1) - atomic_stress(iatm,1,2)*vtmp(2)&
-      - atomic_stress(iatm,1,3)*vtmp(3)
-      j2(2) = j2(2) - atomic_stress(iatm,1,2)*vtmp(1) - atomic_stress(iatm,2,2)*vtmp(2)&
-      - atomic_stress(iatm,2,3)*vtmp(3)
-      j2(3) = j2(3) - atomic_stress(iatm,1,3)*vtmp(1) - atomic_stress(iatm,2,3)*vtmp(2)&
-      - atomic_stress(iatm,3,3)*vtmp(3)
-    end do
-  end subroutine compute_j2
-
-
   !
   subroutine write_heat_flux(time)
     real(8), intent(in) :: time
@@ -512,20 +462,9 @@ contains
     write(flux_file,'(es12.5)') time
     write(flux_file,'(3es15.7)') j1*junit
     write(flux_file,'(3es15.7)') j2*junit
-    write(flux_file,'(3es15.7)') (jtot)*junit
+    write(flux_file,'(3es15.7)') jtot*junit
     close(flux_file)
   end subroutine write_heat_flux
-  !
-  subroutine write_heat_autocorr(time)
-    real(8), intent(in) :: time
-    real(8) :: jjautocorr
-    integer :: auto_file = 7001
-    !
-    open(auto_file,file='heat_autocorrelation.dat',position='append')
-    jjautocorr = dot_product(jtot0,jtot)
-    write(auto_file,'(es12.5,es15.7)') time, jjautocorr!, jtot0
-    close(auto_file)
-  end subroutine write_heat_autocorr
   !
   subroutine total_energy_cpe(entot)
     real(8) :: entot
@@ -542,10 +481,6 @@ contains
   end subroutine total_energy_cpe
 
   subroutine final_sum()
-
-    ! allocate(tmpf2(9*mxatms),tmpf4(mxatms,3,3))
-    ! allocate(tmpf(2*mxatms), tmpf3(9*mxatms), tmpf6(6))
-    !
     tmpf(1:mxatms) = atomic_energy_ang
     call gdsum(tmpf(1),mxatms,tmpf(mxatms+1))
     atomic_energy_ang = tmpf(1:mxatms)
@@ -897,7 +832,35 @@ contains
 
   end subroutine distribute_energy
   !
-
+  subroutine deallocate_heat()
+    deallocate(&
+    atomic_stress, &
+    atomic_stress_ang, &
+    atomic_stress_bnd, &
+    atomic_stress_ew1p, &
+    atomic_stress_ew2p, &
+    atomic_stress_ew3p, &
+    atomic_stress_qd, &
+    atomic_stress_mbpol, &
+    atomic_stress_srf, &
+    atomic_stress_lrcorrect, &
+    atomic_energy_ang, &
+    atomic_energy_bnd, &
+    atomic_energy_ew1p, &
+    atomic_energy_ew2p, &
+    atomic_energy_ew3p, &
+    atomic_energy_mbpol, &
+    atomic_energy_srf, &
+    atomic_energy_lrcorrect, &
+    atomic_energy_polar, &
+    atomic_kinetic_energy, &
+    atomic_potential_energy, &
+    tmpf2, &
+    tmpf4, &
+    tmpf, &
+    tmpf3, &
+    tmpf6)
+  end subroutine deallocate_heat
   !
   ! PPnote_: deallocate arrays
 end module heatcurrent

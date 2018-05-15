@@ -67,6 +67,16 @@ c     set up atoms numbers for nodes
      x            dipz(i)*(efieldkz(i)+efdcrecz(i)+
      x            0.5d0*(emuz(i)+efddmurecz(i))+extz))
 
+#ifdef HEAT_CURRENT
+            call update_energy_polar(i,-
+     x           (dipx(i)*(efieldkx(i)+efdcrecx(i)+
+     x            0.5d0*(emux(i)+efddmurecx(i))+extx)+
+     x            dipy(i)*(efieldky(i)+efdcrecy(i)+
+     x            0.5d0*(emuy(i)+efddmurecy(i))+exty)+
+     x            dipz(i)*(efieldkz(i)+efdcrecz(i)+
+     x            0.5d0*(emuz(i)+efddmurecz(i))+extz)))
+#endif /* HEAT_CURRENT */
+
             ucd=ucd-
      x           (dipx(i)*(efieldkx(i)+efdcrecx(i))+
      x            dipy(i)*(efieldky(i)+efdcrecy(i))+

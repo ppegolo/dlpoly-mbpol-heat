@@ -125,6 +125,9 @@ c
       data lfirst/.true./
       save lfirst
 
+      !PP_:
+      real(8) :: stressold(9), stressew1p(9)
+
 #ifdef FFTW
       FFTW_PLAN_TYPE fplan,bplan
 #else
@@ -372,6 +375,8 @@ c     smooth particle mesh ewald
 
         engcpe=engcpe+engacp
 
+        !PP_:
+        stressold=stress
         call ewald1p
      x    (lpolar,idnode,mxnode,natms,imcon,kmax1,kmax2,kmax3,
      x    engac1,viracc,alpha,volm,epsq,cell,chge,xxx,yyy,zzz,
@@ -382,6 +387,12 @@ c     smooth particle mesh ewald
 
         engcpe=engcpe+engac1
         vircpe=vircpe+viracc
+
+        !PP_:
+        stressew1p=stress-stressold
+        open(111,file='stressew1p_real.dat',position='append')
+        write(111,*) stressew1p
+        close(111)
 
       endif
 
