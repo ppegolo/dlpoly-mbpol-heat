@@ -1,0 +1,19 @@
+PROGRAM = ../dlpoly_ttm_mpi_intel
+
+export OMPI_FC=ifort
+export OMPI_CC=icc
+export OMPI_CXX=icpc
+
+CPPFLAGS = -I/u/shared/programs/x86_64/openmpi/2.0.0/intel/17.0/torque/include
+
+F90 = mpif90
+F90FLAGS = -O2 -extend-source #-xHost
+
+F77 = $(F90)
+F77FLAGS = $(F90FLAGS)
+
+LD = $(F90)
+LDFLAGS = $(F90FLAGS) -lstdc++ -L/u/shared/programs/x86_64/intel/parallel_studio_xe_2017/mkl/lib/intel64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
+
+CXX = mpicxx
+CXXFLAGS = -O2 -xHost
