@@ -1,31 +1,35 @@
       subroutine srfrce
      x  (iatm,ik,engsrp,virsrp,rcut,dlrpot,ilist,ltype,lstvdw,
      x  ltpvdw,rsqdf,xdf,ydf,zdf,fxx,fyy,fzz,vvv,ggg,stress)
-c     
+c
 c***********************************************************************
-c     
+c
 c     dl_poly subroutine for calculating short range force and
 c     potential energy terms using verlet neighbour list
-c     
+c
 c     parallel replicated data version
-c     
+c
 c     copyright - daresbury laboratory 1992
 c     author    - w. smith       march 1992
-c     
+c
 c     version 3
 c     author    - t. forester    june  1993
 c     stress tensor added t.forester may 1994
-c     
+c
 c     wl
 c     2000/01/18 14:05:56
 c     1.4
 c     Exp
-c     
+c
 c***********************************************************************
-c     
-      
+c
+#ifdef HEAT_CURRENT
+      use heatcurrent, only: update_stress_srf, update_energy_srf,
+     x                       update_forces
+#endif /* HEAT_CURRENT */
+
 #include "dl_params.inc"
-      
+
       dimension xdf(mxxdf),ydf(mxxdf),zdf(mxxdf),rsqdf(mxxdf)
       dimension fxx(mxatms),fyy(mxatms),fzz(mxatms)
       dimension vvv(mxgrid,mxvdw),ggg(mxgrid,mxvdw)
@@ -37,13 +41,16 @@ CDIR$ CACHE_ALIGN fi
 #ifdef VAMPIR
       call VTBEGIN(83, ierr)
 #endif
-c     
+#ifdef HEAT_CURRENT
+      real(8) :: force_tmp(3)
+#endif /*HEAT_CURRENT*/
+c
 c     set cutoff condition for pair forces
 
       rcsq=rcut**2
-c     
+c
 c     interpolation spacing
-      
+
       rdr = 1.d0/dlrpot
 #ifdef STRESS
 c
@@ -55,80 +62,86 @@ c     initialise stress tensor accumulators
       strs6 = 0.d0
       strs9 = 0.d0
 #endif
-c     
+c
 c     initialise potential energy and virial
-      
+
       engsrp=0.d0
       virsrp=0.d0
-c     
-c     store forces for iatm 
-      
+c
+c     store forces for iatm
+
       ai = dble(ltype(iatm))
       fi(1) = fxx(iatm)
       fi(2) = fyy(iatm)
       fi(3) = fzz(iatm)
-      
-c     
+
+c
 c     start of primary loop for forces evaluation
-      
+
       do m=1,ik
-        
-c     
+
+c
 c     atomic and potential function indices
-        
+
         jatm=ilist(m)
-        
+
         aj = dble(ltype(jatm))
-        
+
         if(ai.gt.aj) then
           ab = ai*(ai-1.d0)*0.5d0 + aj+0.5d0
         else
           ab = aj*(aj-1.d0)*0.5d0 + ai+0.5d0
         endif
-        
+
         k=lstvdw(int(ab))
-        
-        if((ltpvdw(k).lt.100).and.(vvv(1,k).ne.0.d0)) then 
-c     
+
+        if((ltpvdw(k).lt.100).and.(vvv(1,k).ne.0.d0)) then
+c
 c     apply truncation of potential
-          
+
           rsq = rsqdf(m)
-          
+
           if(rcsq.gt.rsq)then
-            
-            rrr = sqrt(rsq)               
+
+            rrr = sqrt(rsq)
             l=int(rrr*rdr)
             ppp=rrr*rdr-dble(l)
 
-c            
+c
 c     calculate interaction energy using 3-point interpolation
-            
+
             vk = vvv(l,k)
             vk1 = vvv(l+1,k)
             vk2 = vvv(l+2,k)
-            
+
             t1 = vk + (vk1-vk)*ppp
             t2 = vk1 +(vk2 - vk1)*(ppp - 1.0d0)
-            
+
             engsrp = t1 + (t2-t1)*ppp*0.5d0 + engsrp
-c     
+#ifdef HEAT_CURRENT
+            call update_energy_srf(iatm,0.5d0*
+     x           (t1 + (t2-t1)*ppp*0.5d0))
+            call update_energy_srf(jatm,0.5d0*
+     x           (t1 + (t2-t1)*ppp*0.5d0))
+#endif /* HEAT_CURRENT */
+c
 c     calculate forces using 3-point interpolation
-            
+
             gk = ggg(l,k)
             gk1 = ggg(l+1,k)
             gk2 = ggg(l+2,k)
-            
+
             t1 = gk + (gk1-gk)*ppp
             t2 = gk1 + (gk2-gk1)*(ppp - 1.0d0)
-            
+
             gamma = (t1 +(t2-t1)*ppp*0.5d0)/rsq
-c     
+c
 c     calculate forces
-            
+
             fx = gamma*xdf(m)
             fy = gamma*ydf(m)
             fz = gamma*zdf(m)
-            
+
             fi(1)=fi(1)+fx
             fi(2)=fi(2)+fy
             fi(3)=fi(3)+fz
@@ -136,39 +149,66 @@ c     calculate forces
             fxx(jatm) = fxx(jatm) - fx
             fyy(jatm) = fyy(jatm) - fy
             fzz(jatm) = fzz(jatm) - fz
+#ifdef HEAT_CURRENT
+            force_tmp = (/-fx,-fy,-fz/)
+            call update_forces(jatm,iatm,force_tmp)
+            call update_forces(iatm,jatm,-force_tmp)
+#endif /*HEAT_CURRENT*/
 #ifdef STRESS
-c     
+c
 c     calculate stress tensor
-              
+
             strs1 = strs1 + xdf(m)*fx
             strs2 = strs2 + xdf(m)*fy
             strs3 = strs3 + xdf(m)*fz
-              
+
             strs5 = strs5 + ydf(m)*fy
             strs6 = strs6 + ydf(m)*fz
-              
+
             strs9 = strs9 + zdf(m)*fz
 #endif
-c     
+#ifdef HEAT_CURRENT
+#ifdef HEAT_STRESS
+      call update_stress_srf(iatm,1,1,-0.5d0*xdf(m)*fx)
+      call update_stress_srf(iatm,1,2,-0.5d0*xdf(m)*fy)
+      call update_stress_srf(iatm,1,3,-0.5d0*xdf(m)*fz)
+      call update_stress_srf(iatm,2,1,-0.5d0*xdf(m)*fy)
+      call update_stress_srf(iatm,2,2,-0.5d0*ydf(m)*fy)
+      call update_stress_srf(iatm,2,3,-0.5d0*ydf(m)*fz)
+      call update_stress_srf(iatm,3,1,-0.5d0*xdf(m)*fz)
+      call update_stress_srf(iatm,3,2,-0.5d0*ydf(m)*fz)
+      call update_stress_srf(iatm,3,3,-0.5d0*zdf(m)*fz)
+      call update_stress_srf(jatm,1,1,-0.5d0*xdf(m)*fx)
+      call update_stress_srf(jatm,1,2,-0.5d0*xdf(m)*fy)
+      call update_stress_srf(jatm,1,3,-0.5d0*xdf(m)*fz)
+      call update_stress_srf(jatm,2,1,-0.5d0*xdf(m)*fy)
+      call update_stress_srf(jatm,2,2,-0.5d0*ydf(m)*fy)
+      call update_stress_srf(jatm,2,3,-0.5d0*ydf(m)*fz)
+      call update_stress_srf(jatm,3,1,-0.5d0*xdf(m)*fz)
+      call update_stress_srf(jatm,3,2,-0.5d0*ydf(m)*fz)
+      call update_stress_srf(jatm,3,3,-0.5d0*zdf(m)*fz)
+#endif
+#endif /* HEAT_CURRENT */
+c
 c     calculate virial
-            
+
             virsrp=virsrp-gamma*rsq
-            
+
           endif
-          
+
         endif
-        
+
       enddo
-c     
+c
 c     load temps back to fxx(iatm) etc
-      
+
       fxx(iatm) = fi(1)
       fyy(iatm) = fi(2)
       fzz(iatm) = fi(3)
 #ifdef STRESS
-c     
+c
 c     complete stress tensor
-        
+
       stress(1) = stress(1) + strs1
       stress(2) = stress(2) + strs2
       stress(3) = stress(3) + strs3

@@ -63,7 +63,8 @@ c
 #endif /* TTM_FORCE_DECOMPOSITION */
 
 #ifdef HEAT_CURRENT
-      use heatcurrent, only: update_stress_ew1p, update_energy_ew1p
+      use heatcurrent, only: update_stress_ew1p, update_energy_ew1p,
+     x                       update_force_ew1p
 #endif /* HEAT_CURRENT */
       use ps_type_dms, only: vesp_k, vesp_s, vesp_dc_k, ldms
 
@@ -100,6 +101,7 @@ c
       real(8) :: stressCC(9), stressDD(9)
       real(8) :: stressCD(9), stressDC(9)
       real(8) :: dpkCMi, dpkMc, dpkMs, dpkSMi
+      real(8) :: force_tmp(3)
 #endif /* HEAT_CURRENT */
 
       save newjob,engsic
@@ -169,12 +171,6 @@ c     calculate self interaction correction
         do i=iatm0,iatm1
 
           engsic=engsic+chge(i)**2
-#ifdef HEAT_CURRENT
-          if (iflag.eq.1) then
-            call update_energy_ew1p(i,-r4pie0/epsq*
-     x      alpha*chge(i)**2/sqrpi)
-          end if
-#endif /* HEAT_CURRENT */
 
         enddo
 
@@ -182,6 +178,16 @@ c     calculate self interaction correction
         newjob=.false.
 
       endif
+
+      do i=iatm0,iatm1
+
+#ifdef HEAT_CURRENT
+          if (iflag.eq.1) then
+            call update_energy_ew1p(i,-r4pie0/epsq*
+     x      alpha*chge(i)**2/sqrpi)
+          end if
+#endif /* HEAT_CURRENT */
+      end do
 
 c
 c     calculate and store exponential factors
@@ -670,15 +676,15 @@ c     accumulate potential energy and virial terms
                      strs8k = stressCC(8) + stressCD(8) + stressDD(8)
                      strs9k = stressCC(9) + stressCD(9) + stressDD(9)
 
-                      call update_stress_ew1p(j,1,1,strs1k)
-                      call update_stress_ew1p(j,1,2,strs2k)
-                      call update_stress_ew1p(j,1,3,strs3k)
-                      call update_stress_ew1p(j,2,1,strs4k)
-                      call update_stress_ew1p(j,2,2,strs5k)
-                      call update_stress_ew1p(j,2,3,strs6k)
-                      call update_stress_ew1p(j,3,1,strs7k)
-                      call update_stress_ew1p(j,3,2,strs8k)
-                      call update_stress_ew1p(j,3,3,strs9k)
+                      call update_stress_ew1p(j,1,1,-strs1k)
+                      call update_stress_ew1p(j,1,2,-strs2k)
+                      call update_stress_ew1p(j,1,3,-strs3k)
+                      call update_stress_ew1p(j,2,1,-strs4k)
+                      call update_stress_ew1p(j,2,2,-strs5k)
+                      call update_stress_ew1p(j,2,3,-strs6k)
+                      call update_stress_ew1p(j,3,1,-strs7k)
+                      call update_stress_ew1p(j,3,2,-strs8k)
+                      call update_stress_ew1p(j,3,3,-strs9k)
                       !
                       call update_energy_ew1p(j,scalefactor*akk*
      x                (ckc(i)*ckcs+cks(i)*ckss))
@@ -694,8 +700,8 @@ c     accumulate potential energy and virial terms
                     virprs=akv*(summu1*summu1+summu2*summu2)
 
                     omg(1)=omg(1)-virprs*rkx3*rkx3
-!     x                     -2.d0*akk*rkx3*dmuskrsx*summu1
-!     x                     +2.d0*akk*rkx3*dmuckrsx*summu2
+     x                     -2.d0*akk*rkx3*dmuskrsx*summu1
+     x                     +2.d0*akk*rkx3*dmuckrsx*summu2
                     omg(5)=omg(5)-virprs*rky3*rky3
      x                     -2.d0*akk*rky3*dmuskrsy*summu1
      x                     +2.d0*akk*rky3*dmuckrsy*summu2
@@ -770,6 +776,13 @@ c     increment dipole field in k-space
                          fxx(j)=fxx(j)-rkx3*akk*ssmu
                          fyy(j)=fyy(j)-rky3*akk*ssmu
                          fzz(j)=fzz(j)-rkz3*akk*ssmu
+
+#ifdef HEAT_CURRENT
+                         force_tmp = (/-rkx3*akk*ssmu,-rky3*
+     x                     akk*ssmu,-rkz3*akk*ssmu/)
+         force_tmp = 4.d0*rvolm*r4pie0/epsq*force_tmp
+                         call update_force_ew1p(j,force_tmp)
+#endif /*HEAT_CURRENT*/
 
 #ifdef TTM_FORCE_DECOMPOSITION
 !     parmanent part

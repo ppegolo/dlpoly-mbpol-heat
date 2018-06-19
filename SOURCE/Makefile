@@ -31,8 +31,9 @@ include machine/abulafia-gfortran
 CC  = gcc 
 CPP = cpp -P -traditional
 CPPFLAGS += -DMPI -DSTRESS  # -DDEBUG
-CPPFLAGS += -DHEAT_CURRENT  # for energy and stress decomposistion and 
-                            #calculation of heat current
+CPPFLAGS += -DHEAT_CURRENT  # for energy and forces decomposistion and 
+                            # calculation of heat current
+#CPPFLAGS += -DHEAT_STRESS   # for stress decomposition (Possibly wrong!!!)
 CPPFLAGS += -DHEAT_CHECK    # check if the energy and stress decomposition sums up correctly
 #CPPFLAGS += -DDO_2D_IR          # for 2D IR calculation 
 #CPPFLAGS += -DOPTORVIB -DOPT     # for geometry optimization and vibrational analysis - DOPT is MB-pol to account for ceiling

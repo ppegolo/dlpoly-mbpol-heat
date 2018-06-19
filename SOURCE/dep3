@@ -2,7 +2,7 @@
 #   Please do not edit the "depend" file directly, since it is created by the
 #   "makedepend" script.  If changes are needed, edit "makedepend" itself.
 #
-CPPFLAGS += -DVERSION="'31-mag-2018-stable'"
+CPPFLAGS += -DVERSION="'06-giu-2018-stable'"
 angfrc.o: \
                     module.o\
                     heatcurrent.o
@@ -500,8 +500,7 @@ fldscan.o: fldscan.f
 	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _fldscan.f
 
 forces.o: \
-                    module.o\
-                    heatcurrent.o
+                    module.o
 
 forces.o: forces.f
 	$(CPP) $(CPPFLAGS) forces.f > _forces.f
@@ -1350,6 +1349,9 @@ fordebug.o: fordebug.f90
 	$(CPP) $(CPPFLAGS) fordebug.f90 > _fordebug.f90
 	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _fordebug.f90
 
+fsockets.o: \
+                    .o
+
 fsockets.o: fsockets.f90
 	$(CPP) $(CPPFLAGS) fsockets.f90 > _fsockets.f90
 	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _fsockets.f90
@@ -1377,7 +1379,7 @@ induced_error.o: induced_error.f90
 	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _induced_error.f90
 
 ipi.o: \
-                    fsockets.o\
+                    .o
 
 ipi.o: ipi.f90
 	$(CPP) $(CPPFLAGS) ipi.f90 > _ipi.f90
