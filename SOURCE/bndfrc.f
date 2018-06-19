@@ -43,7 +43,8 @@ c***********************************************************************
 #endif /* TTM_FORCE_DECOMPOSITION */
 
 #ifdef HEAT_CURRENT
-      use heatcurrent, only: update_stress_bnd, update_energy_bnd
+      use heatcurrent, only: update_stress_bnd, update_energy_bnd,
+     x                       update_forces
 #endif
 
 #include "dl_params.inc"
@@ -63,6 +64,7 @@ c***********************************************************************
 
 #ifdef HEAT_CURRENT
       real(8), parameter :: half=0.5d0
+      real(8) :: force_tmp(3)
 #endif
 
 c
@@ -305,6 +307,11 @@ c     calculate forces
         fxx(ib) = fxx(ib) - fx
         fyy(ib) = fyy(ib) - fy
         fzz(ib) = fzz(ib) - fz
+#ifdef HEAT_CURRENT
+        force_tmp = (/ fx,fy,fz /)
+        call update_forces(ia,ib,force_tmp)
+        call update_forces(ib,ia,-force_tmp)
+#endif /*HEAT_CURRENT*/
 !
 !     for force decompositions
 #ifdef TTM_FORCE_DECOMPOSITION
@@ -336,24 +343,26 @@ c     calculate stress tensor
 #endif
 
 #ifdef HEAT_CURRENT
-        call update_stress_bnd(ia,1,1,half*xdab(ii)*fx)
-        call update_stress_bnd(ia,1,2,half*xdab(ii)*fy)
-        call update_stress_bnd(ia,1,3,half*xdab(ii)*fz)
-        call update_stress_bnd(ia,2,1,half*xdab(ii)*fy)
-        call update_stress_bnd(ia,2,2,half*ydab(ii)*fy)
-        call update_stress_bnd(ia,2,3,half*ydab(ii)*fz)
-        call update_stress_bnd(ia,3,1,half*xdab(ii)*fz)
-        call update_stress_bnd(ia,3,2,half*ydab(ii)*fz)
-        call update_stress_bnd(ia,3,3,half*zdab(ii)*fz)
-        call update_stress_bnd(ib,1,1,half*xdab(ii)*fx)
-        call update_stress_bnd(ib,1,2,half*xdab(ii)*fy)
-        call update_stress_bnd(ib,1,3,half*xdab(ii)*fz)
-        call update_stress_bnd(ib,2,1,half*xdab(ii)*fy)
-        call update_stress_bnd(ib,2,2,half*ydab(ii)*fy)
-        call update_stress_bnd(ib,2,3,half*ydab(ii)*fz)
-        call update_stress_bnd(ib,3,1,half*xdab(ii)*fz)
-        call update_stress_bnd(ib,3,2,half*ydab(ii)*fz)
-        call update_stress_bnd(ib,3,3,half*zdab(ii)*fz)
+#ifdef HEAT_STRESS
+        call update_stress_bnd(ia,1,1,-half*xdab(ii)*fx)
+        call update_stress_bnd(ia,1,2,-half*xdab(ii)*fy)
+        call update_stress_bnd(ia,1,3,-half*xdab(ii)*fz)
+        call update_stress_bnd(ia,2,1,-half*xdab(ii)*fy)
+        call update_stress_bnd(ia,2,2,-half*ydab(ii)*fy)
+        call update_stress_bnd(ia,2,3,-half*ydab(ii)*fz)
+        call update_stress_bnd(ia,3,1,-half*xdab(ii)*fz)
+        call update_stress_bnd(ia,3,2,-half*ydab(ii)*fz)
+        call update_stress_bnd(ia,3,3,-half*zdab(ii)*fz)
+        call update_stress_bnd(ib,1,1,-half*xdab(ii)*fx)
+        call update_stress_bnd(ib,1,2,-half*xdab(ii)*fy)
+        call update_stress_bnd(ib,1,3,-half*xdab(ii)*fz)
+        call update_stress_bnd(ib,2,1,-half*xdab(ii)*fy)
+        call update_stress_bnd(ib,2,2,-half*ydab(ii)*fy)
+        call update_stress_bnd(ib,2,3,-half*ydab(ii)*fz)
+        call update_stress_bnd(ib,3,1,-half*xdab(ii)*fz)
+        call update_stress_bnd(ib,3,2,-half*ydab(ii)*fz)
+        call update_stress_bnd(ib,3,3,-half*zdab(ii)*fz)
+#endif
 #endif
       enddo
 #ifdef STRESS

@@ -66,6 +66,8 @@ c
       use unit_parameters, only: eatd
       use ps_type_dms,     only: vesp, vesp_k, vesp_r, vesp_s, vesp_c,
      x                           vesp_dc_k, vesp_dc_r, vesp_dc_c, ldms
+          ! PP_:
+      use heatcurrent, only: check_forces
 
 #include "dl_params.inc"
 
@@ -125,8 +127,9 @@ c
       data lfirst/.true./
       save lfirst
 
-      !PP_:
-      real(8) :: stressold(9), stressew1p(9)
+
+      ! PP_:
+      real(8) :: fxx_tmp(1024)=0.d0, fxx_tmp_old(1024)
 
 #ifdef FFTW
       FFTW_PLAN_TYPE fplan,bplan
@@ -200,14 +203,22 @@ c     fourier contribution to coulombic forces in Ewald sum
 
       if(lewald .and. .not.lpolar)then
 
+        !         PP_:
+              /* fxx_tmp_old = fxx */
         call ewald1
      x    (idnode,mxnode,natms,imcon,kmax1,kmax2,kmax3,
      x    engac1,viracc,alpha,volm,epsq,cell,chge,xxx,yyy,zzz,
      x    fxx,fyy,fzz,elc,emc,enc,els,ems,ens,ckc,cks,clm,slm,
      x    stress,buffer,ewlbuf)
 
+            ! PP_:
+          /* fxx_tmp = fxx_tmp + fxx - fxx_tmp_old */
+
         engcpe=engcpe+engac1
         vircpe=vircpe+viracc
+
+        !PP_:
+        write(1111,*) engac1
 
       endif
 c
@@ -252,7 +263,6 @@ c     smooth particle mesh ewald
 
         engcpe=engcpe+engac1
         vircpe=vircpe+viracc
-
       endif
 
       if( lpoloff ) goto 999    ! skip when pol. evaluation is unnecessary
@@ -375,8 +385,6 @@ c     smooth particle mesh ewald
 
         engcpe=engcpe+engacp
 
-        !PP_:
-        stressold=stress
         call ewald1p
      x    (lpolar,idnode,mxnode,natms,imcon,kmax1,kmax2,kmax3,
      x    engac1,viracc,alpha,volm,epsq,cell,chge,xxx,yyy,zzz,
@@ -387,12 +395,6 @@ c     smooth particle mesh ewald
 
         engcpe=engcpe+engac1
         vircpe=vircpe+viracc
-
-        !PP_:
-        stressew1p=stress-stressold
-        open(111,file='stressew1p_real.dat',position='append')
-        write(111,*) stressew1p
-        close(111)
 
       endif
 
@@ -552,10 +554,14 @@ c     calculate short range force and potential terms
      $             lstvdw,ltpvdw,rsqdf,xdf,ydf,zdf,fxx,fyy,fzz,vvv,
      $             ggg,stress,lttm)
            else
+
+
               call srfrce
      x             (i,lentry(ii),engacc,viracc,rvdw,dlrpot,ilist,ltype,
      $             lstvdw,ltpvdw,rsqdf,xdf,ydf,zdf,fxx,fyy,fzz,vvv,
      $             ggg,stress)
+
+
            endif
 
           engsrp=engsrp+engacc
@@ -567,6 +573,7 @@ c     calculate coulombic force and potential terms
 c     (real space contributions to ewald sum)
 
         if ((lewald.or.lspme) .and. (.not.lpolar))then
+
 
           call ewald2
      x      (i,lentry(ii),engacc,viracc,drewd,rcut,epsq,ilist,
@@ -902,6 +909,9 @@ c     sum up contributions to short range and coulombic potential
         vircpe=buffer(8)
 
       endif
+
+      ! PP_:
+      /* call check_forces(0.d0,fxx_tmp) */
 
 #ifdef VAMPIR
       call VTEND(15, ierr)

@@ -35,7 +35,8 @@ c
 #endif /* TTM_FORCE_DECOMPOSITION */
 
 #ifdef HEAT_CURRENT
-      use heatcurrent, only: update_stress_ew3p, update_energy_ew3p
+      use heatcurrent, only: update_stress_ew3p, update_energy_ew3p,
+     x                       update_forces
 #endif /* HEAT_CURRENT */
 
       use ps_type_dms, only: vesp_c, vesp_dc_c, ldms
@@ -56,8 +57,11 @@ c
 
       integer n_water, n_water_atoms, no_water_atoms
 #ifdef HEAT_CURRENT
+#ifdef HEAT_STRESS
       real(8) :: strs1,strs2,strs3,strs4,strs5,strs6
       real(8) :: strs7,strs8,strs9
+#endif
+      real(8) :: force_tmp(3)
 #endif /* HEAT_CURRENT */
 
 #ifdef VAMPIR
@@ -288,6 +292,12 @@ c     increment forces
            fyy(jatm) = fyy(jatm)-fy
            fzz(jatm) = fzz(jatm)-fz
 
+#ifdef HEAT_CURRENT
+            force_tmp = (/ fx,fy,fz /)
+            call update_forces(iatm,jatm,force_tmp)
+            call update_forces(jatm,iatm,-force_tmp)
+#endif /*HEAT_CURRENT*/
+
            virdum = dfacx*xdf(m)+dfacy*ydf(m)+dfacz*zdf(m)
            vircpe = vircpe - ffac*rsq - virdum
 !
@@ -343,6 +353,7 @@ c     calculate stress tensor
 #endif
 
 #ifdef HEAT_CURRENT
+#ifdef HEAT_STRESS
         strs1 = strs1+xdf(m)*fx
         strs2 = strs2+xdf(m)*fy
         strs3 = strs3+xdf(m)*fz
@@ -353,24 +364,25 @@ c     calculate stress tensor
         strs8 = strs8+ydf(m)*fz
         strs9 = strs9+zdf(m)*fz
 
-        call update_stress_ew3p(iatm,1,1,0.5d0*xdf(m)*fx)
-        call update_stress_ew3p(iatm,1,2,0.5d0*xdf(m)*fy)
-        call update_stress_ew3p(iatm,1,3,0.5d0*xdf(m)*fz)
-        call update_stress_ew3p(iatm,2,1,0.5d0*xdf(m)*fy)
-        call update_stress_ew3p(iatm,2,2,0.5d0*ydf(m)*fy)
-        call update_stress_ew3p(iatm,2,3,0.5d0*ydf(m)*fz)
-        call update_stress_ew3p(iatm,3,1,0.5d0*xdf(m)*fz)
-        call update_stress_ew3p(iatm,3,2,0.5d0*ydf(m)*fz)
-        call update_stress_ew3p(iatm,3,3,0.5d0*zdf(m)*fz)
-        call update_stress_ew3p(jatm,1,1,0.5d0*xdf(m)*fx)
-        call update_stress_ew3p(jatm,1,2,0.5d0*xdf(m)*fy)
-        call update_stress_ew3p(jatm,1,3,0.5d0*xdf(m)*fz)
-        call update_stress_ew3p(jatm,2,1,0.5d0*xdf(m)*fy)
-        call update_stress_ew3p(jatm,2,2,0.5d0*ydf(m)*fy)
-        call update_stress_ew3p(jatm,2,3,0.5d0*ydf(m)*fz)
-        call update_stress_ew3p(jatm,3,1,0.5d0*xdf(m)*fz)
-        call update_stress_ew3p(jatm,3,2,0.5d0*ydf(m)*fz)
-        call update_stress_ew3p(jatm,3,3,0.5d0*zdf(m)*fz)
+        call update_stress_ew3p(iatm,1,1,-0.5d0*xdf(m)*fx)
+        call update_stress_ew3p(iatm,1,2,-0.5d0*xdf(m)*fy)
+        call update_stress_ew3p(iatm,1,3,-0.5d0*xdf(m)*fz)
+        call update_stress_ew3p(iatm,2,1,-0.5d0*xdf(m)*fy)
+        call update_stress_ew3p(iatm,2,2,-0.5d0*ydf(m)*fy)
+        call update_stress_ew3p(iatm,2,3,-0.5d0*ydf(m)*fz)
+        call update_stress_ew3p(iatm,3,1,-0.5d0*xdf(m)*fz)
+        call update_stress_ew3p(iatm,3,2,-0.5d0*ydf(m)*fz)
+        call update_stress_ew3p(iatm,3,3,-0.5d0*zdf(m)*fz)
+        call update_stress_ew3p(jatm,1,1,-0.5d0*xdf(m)*fx)
+        call update_stress_ew3p(jatm,1,2,-0.5d0*xdf(m)*fy)
+        call update_stress_ew3p(jatm,1,3,-0.5d0*xdf(m)*fz)
+        call update_stress_ew3p(jatm,2,1,-0.5d0*xdf(m)*fy)
+        call update_stress_ew3p(jatm,2,2,-0.5d0*ydf(m)*fy)
+        call update_stress_ew3p(jatm,2,3,-0.5d0*ydf(m)*fz)
+        call update_stress_ew3p(jatm,3,1,-0.5d0*xdf(m)*fz)
+        call update_stress_ew3p(jatm,3,2,-0.5d0*ydf(m)*fz)
+        call update_stress_ew3p(jatm,3,3,-0.5d0*zdf(m)*fz)
+#endif
 #endif /* HEAT_CURRENT */
       enddo
 #ifdef STRESS

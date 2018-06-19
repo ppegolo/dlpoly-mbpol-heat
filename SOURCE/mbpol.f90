@@ -10,7 +10,8 @@ module mbpol
 
 !----------------------------------------------------------------------------
 #ifdef HEAT_CURRENT
-use heatcurrent, only: update_stress_mbpol, update_energy_mbpol
+use heatcurrent, only: update_stress_mbpol, update_energy_mbpol, update_forces
+
 #endif /* HEAT_CURRENT */
 
 
@@ -37,6 +38,9 @@ real(8), private, parameter :: engunit = 418.4d0
 
 #ifdef HEAT_CURRENT
 real(8), parameter :: third=1.d0/3.d0
+real(8), parameter :: sixth=1.d0/6.d0
+real(8), parameter :: nineth=1.d0/9.d0
+real(8) :: force_tmp(3)
 #endif /* HEAT_CURRENT */
 
 !============================================================================
@@ -104,7 +108,7 @@ subroutine mbpol_forces(imcon,cell,nttm2,listttm2,wat_monomer_ener, &
    real(8), intent(in) :: xxx(*), yyy(*), zzz(*)
    real(8), intent(in) :: wat_monomer_ener(*)  ! SR
 
-   real(8), intent(inout) :: fxx(*), fyy(*), fzz(*)
+   real(8), intent(inout) :: fxx(*), fyy(*), fzz(*) ! PP_:
    real(8), intent(inout) :: engsrp, virsrp, stress(9) !FP: added
 
    real(8) :: eng2, vir2
@@ -119,6 +123,9 @@ subroutine mbpol_forces(imcon,cell,nttm2,listttm2,wat_monomer_ener, &
    integer(kind=8) :: nw, nw2, nw3,t,tmp_bead_size
    integer(kind=8) :: istart, iend, istep
 
+   ! PP_:
+   ! real(8) :: f2body(1024), f2body_old(1024)
+   ! real(8) :: f3body(1024), f3body_old(1024)
 
    real(8) :: timeint,timetot
 
@@ -211,16 +218,25 @@ subroutine mbpol_forces(imcon,cell,nttm2,listttm2,wat_monomer_ener, &
    istart = bead_rank
    iend   = nw2 - 1
    istep  = bead_size
+
+   ! PP_:
+   ! f2body = 0.d0
+   ! f3body = 0.d0
+
    do t = istart, iend, istep
 !   do t = 1, nw2
 !      if (mod(t,tmp_bead_size).eq.bead_rank) then
          o1 = listttm2(3*i - 2)
          o2 = listttm2(3*j - 2)
 #ifdef HEAT_CURRENT
+          ! PP_:
+          !f2body_old = fxx
          call do_dimer(imcon,cell, &
               & monomers(9*(i-1)+1),monomers(9*(j-1)+1), &
               & fxx(o1),fyy(o1),fzz(o1),fxx(o2),fyy(o2),fzz(o2), &
               & eng2,vir2,strs,o1,o2) !FP: added.
+
+            !f2body = f2body + fxx - f2body_old
 #else
           call do_dimer(imcon,cell, &
                & monomers(9*(i-1)+1),monomers(9*(j-1)+1), &
@@ -254,6 +270,12 @@ subroutine mbpol_forces(imcon,cell,nttm2,listttm2,wat_monomer_ener, &
       end if
 
    end do ! t = 1, nw2
+
+   ! PP_:
+   ! write(101,*) 'time'
+   ! do t = 1,768
+   !  write(101,*) f2body(t)
+   ! enddo
 
 #ifdef DEBUG
       call timchk(0,timeint)
@@ -297,12 +319,16 @@ subroutine mbpol_forces(imcon,cell,nttm2,listttm2,wat_monomer_ener, &
          o3 = listttm2(3*k - 2)
 !         write(*,*) 'wat-wat',o1,o2,o3
 #ifdef HEAT_CURRENT
+          ! PP_:
+          !f3body_old = fxx
          call do_trimer(imcon,cell, &
           & monomers(9*(i-1)+1),monomers(9*(j-1)+1),monomers(9*(k-1)+1), &
           & fxx(o1),fyy(o1),fzz(o1), &
           & fxx(o2),fyy(o2),fzz(o2), &
           & fxx(o3),fyy(o3),fzz(o3), &
           & eng3,vir3,strs,o1,o2,o3)
+
+          !f3body = f3body + fxx - f3body_old
 #else
           call do_trimer(imcon,cell, &
            & monomers(9*(i-1)+1),monomers(9*(j-1)+1),monomers(9*(k-1)+1), &
@@ -346,6 +372,12 @@ subroutine mbpol_forces(imcon,cell,nttm2,listttm2,wat_monomer_ener, &
       end if ! k.gt.nw
 
    end do ! t = 1, nw3
+
+   ! PP_:
+   ! write(102,*) 'time'
+   ! do t = 1,768
+   !  write(102,*) f3body(t)
+   ! enddo
 
 
 #ifdef DEBUG
@@ -430,7 +462,16 @@ subroutine do_dimer(imcon,cell,w1,w2,fx1,fy1,fz1,fx2,fy2,fz2,engacc,viracc,strs)
 
 #ifdef HEAT_CURRENT
    integer, intent(in) :: o1, o2
-#endif /* HEAT_CURRENT */
+   real(8) :: force_matrix(0:107), force_tmp(3)
+#ifdef HEAT_STRESS
+   real(8) :: stress_tmp(1:6,1:9)
+#endif
+   integer :: imol, iatm1, iatm2, idx1, idx2
+   real(8) :: rij(18), rij_tmp(3)
+#else /* HEAT_CURRENT */
+   real(8) :: force_matrix(0:107)
+#endif
+
 
    real(8), intent(in) :: cell(*)
 
@@ -467,13 +508,75 @@ subroutine do_dimer(imcon,cell,w1,w2,fx1,fy1,fz1,fx2,fy2,fz2,engacc,viracc,strs)
       w1(k) = w2(k) + r12(k)
    end do
 
-   call mbpol_2b_poly(w1,w2,e2,g1,g2)
+#ifdef HEAT_CURRENT
+   rij(1:9) = w1(1:9)
+   rij(10:18) = w2(1:9)
+#endif
+
+   ! PP_: added force_matrix
+   call mbpol_2b_poly(w1,w2,e2,g1,g2,force_matrix)
 
    engacc = engacc + e2*engunit
 
 #ifdef HEAT_CURRENT
-   call update_energy_mbpol(o1,0.5*e2*engunit)
-   call update_energy_mbpol(o2,0.5*e2*engunit)
+    ! call update_energy_mbpol(o1,0.5d0*e2*engunit)
+    ! call update_energy_mbpol(o2,0.5d0*e2*engunit)
+
+   call update_energy_mbpol(o1,sixth*e2*engunit)
+   call update_energy_mbpol(o1+1,sixth*e2*engunit)
+   call update_energy_mbpol(o1+2,sixth*e2*engunit)
+
+   call update_energy_mbpol(o2,sixth*e2*engunit)
+   call update_energy_mbpol(o2+1,sixth*e2*engunit)
+   call update_energy_mbpol(o2+2,sixth*e2*engunit)
+
+   do iatm1 = 0, 5
+     do iatm2 = 0, 5
+       !if (iatm1 == iatm2) cycle
+       if (iatm1 < 3) then
+         idx1 = o1 + iatm1
+         force_tmp = sixth*(/ g1(3*(iatm1+1)-2),g1(3*(iatm1+1)-1),g1(3*(iatm1+1)-0) /)
+       else
+         idx1 = o2 + iatm1 - 3
+         force_tmp = sixth*(/ g2(3*(iatm1-2)-2),g2(3*(iatm1-2)-1),g2(3*(iatm1-2)-0) /)
+       end if
+       if (iatm2 < 3) then
+         idx2 = o1 + iatm2
+       else
+         idx2 = o2 + iatm2 - 3
+       end if
+
+       ! force_tmp = (/force_matrix(18*iatm1+3*iatm2+0),&
+       !               force_matrix(18*iatm1+3*iatm2+1),&
+       !               force_matrix(18*iatm1+3*iatm2+2)/)
+
+       force_tmp = force_tmp*engunit
+       call update_forces(idx1,idx2,-force_tmp)
+     end do
+   end do
+
+#ifdef HEAT_STRESS
+   stress_tmp = 0.d0
+   do iatm1 = 1, 6
+     do iatm2 = 1,6
+       if (iatm1 == iatm2) cycle
+       rij_tmp = rij(3*(iatm1-1)+1:3*(iatm1-1)+3) - rij(3*(iatm2-1)+1:3*(iatm2-1)+3)
+       force_tmp = (/-force_matrix(18*(iatm1-1)+3*(iatm2-1)+0),&
+                     -force_matrix(18*(iatm1-1)+3*(iatm2-1)+1),&
+                     -force_matrix(18*(iatm1-1)+3*(iatm2-1)+2)/)
+       stress_tmp(iatm1,1) = stress_tmp(iatm1,1) + rij_tmp(1)*force_tmp(1)
+       stress_tmp(iatm1,2) = stress_tmp(iatm1,2) + rij_tmp(1)*force_tmp(2)
+       stress_tmp(iatm1,3) = stress_tmp(iatm1,3) + rij_tmp(1)*force_tmp(3)
+       stress_tmp(iatm1,4) = stress_tmp(iatm1,4) + rij_tmp(2)*force_tmp(1)
+       stress_tmp(iatm1,5) = stress_tmp(iatm1,5) + rij_tmp(2)*force_tmp(2)
+       stress_tmp(iatm1,6) = stress_tmp(iatm1,6) + rij_tmp(2)*force_tmp(3)
+       stress_tmp(iatm1,7) = stress_tmp(iatm1,7) + rij_tmp(3)*force_tmp(1)
+       stress_tmp(iatm1,8) = stress_tmp(iatm1,8) + rij_tmp(3)*force_tmp(2)
+       stress_tmp(iatm1,9) = stress_tmp(iatm1,9) + rij_tmp(3)*force_tmp(3)
+     end do
+   end do
+   stress_tmp = -stress_tmp*0.5d0*engunit
+#endif /* HEAT_STRESS */
 #endif /* HEAT_CURRENT */
 
    do k = 1, 9
@@ -551,24 +654,137 @@ subroutine do_dimer(imcon,cell,w1,w2,fx1,fy1,fz1,fx2,fy2,fz2,engacc,viracc,strs)
 #endif
 
 #ifdef HEAT_CURRENT
-  call update_stress_mbpol(o1,1,1,0.5d0*strs(1))
-  call update_stress_mbpol(o1,1,2,0.5d0*strs(2))
-  call update_stress_mbpol(o1,1,3,0.5d0*strs(3))
-  call update_stress_mbpol(o1,2,1,0.5d0*strs(4))
-  call update_stress_mbpol(o1,2,2,0.5d0*strs(5))
-  call update_stress_mbpol(o1,2,3,0.5d0*strs(6))
-  call update_stress_mbpol(o1,3,1,0.5d0*strs(7))
-  call update_stress_mbpol(o1,3,2,0.5d0*strs(8))
-  call update_stress_mbpol(o1,3,3,0.5d0*strs(9))
-  call update_stress_mbpol(o2,1,1,0.5d0*strs(1))
-  call update_stress_mbpol(o2,1,2,0.5d0*strs(2))
-  call update_stress_mbpol(o2,1,3,0.5d0*strs(3))
-  call update_stress_mbpol(o2,2,1,0.5d0*strs(4))
-  call update_stress_mbpol(o2,2,2,0.5d0*strs(5))
-  call update_stress_mbpol(o2,2,3,0.5d0*strs(6))
-  call update_stress_mbpol(o2,3,1,0.5d0*strs(7))
-  call update_stress_mbpol(o2,3,2,0.5d0*strs(8))
-  call update_stress_mbpol(o2,3,3,0.5d0*strs(9))
+#ifdef HEAT_STRESS
+  ! call update_stress_mbpol(o1,1,1,0.5d0*strs(1))
+  ! call update_stress_mbpol(o1,1,2,0.5d0*strs(2))
+  ! call update_stress_mbpol(o1,1,3,0.5d0*strs(3))
+  ! call update_stress_mbpol(o1,2,1,0.5d0*strs(4))
+  ! call update_stress_mbpol(o1,2,2,0.5d0*strs(5))
+  ! call update_stress_mbpol(o1,2,3,0.5d0*strs(6))
+  ! call update_stress_mbpol(o1,3,1,0.5d0*strs(7))
+  ! call update_stress_mbpol(o1,3,2,0.5d0*strs(8))
+  ! call update_stress_mbpol(o1,3,3,0.5d0*strs(9))
+  ! call update_stress_mbpol(o2,1,1,0.5d0*strs(1))
+  ! call update_stress_mbpol(o2,1,2,0.5d0*strs(2))
+  ! call update_stress_mbpol(o2,1,3,0.5d0*strs(3))
+  ! call update_stress_mbpol(o2,2,1,0.5d0*strs(4))
+  ! call update_stress_mbpol(o2,2,2,0.5d0*strs(5))
+  ! call update_stress_mbpol(o2,2,3,0.5d0*strs(6))
+  ! call update_stress_mbpol(o2,3,1,0.5d0*strs(7))
+  ! call update_stress_mbpol(o2,3,2,0.5d0*strs(8))
+  ! call update_stress_mbpol(o2,3,3,0.5d0*strs(9))
+
+  ! call update_stress_mbpol(o1,1,1,sixth*strs(1))
+  ! call update_stress_mbpol(o1,1,2,sixth*strs(2))
+  ! call update_stress_mbpol(o1,1,3,sixth*strs(3))
+  ! call update_stress_mbpol(o1,2,1,sixth*strs(4))
+  ! call update_stress_mbpol(o1,2,2,sixth*strs(5))
+  ! call update_stress_mbpol(o1,2,3,sixth*strs(6))
+  ! call update_stress_mbpol(o1,3,1,sixth*strs(7))
+  ! call update_stress_mbpol(o1,3,2,sixth*strs(8))
+  ! call update_stress_mbpol(o1,3,3,sixth*strs(9))
+  ! call update_stress_mbpol(o1+1,1,1,sixth*strs(1))
+  ! call update_stress_mbpol(o1+1,1,2,sixth*strs(2))
+  ! call update_stress_mbpol(o1+1,1,3,sixth*strs(3))
+  ! call update_stress_mbpol(o1+1,2,1,sixth*strs(4))
+  ! call update_stress_mbpol(o1+1,2,2,sixth*strs(5))
+  ! call update_stress_mbpol(o1+1,2,3,sixth*strs(6))
+  ! call update_stress_mbpol(o1+1,3,1,sixth*strs(7))
+  ! call update_stress_mbpol(o1+1,3,2,sixth*strs(8))
+  ! call update_stress_mbpol(o1+1,3,3,sixth*strs(9))
+  ! call update_stress_mbpol(o1+2,1,1,sixth*strs(1))
+  ! call update_stress_mbpol(o1+2,1,2,sixth*strs(2))
+  ! call update_stress_mbpol(o1+2,1,3,sixth*strs(3))
+  ! call update_stress_mbpol(o1+2,2,1,sixth*strs(4))
+  ! call update_stress_mbpol(o1+2,2,2,sixth*strs(5))
+  ! call update_stress_mbpol(o1+2,2,3,sixth*strs(6))
+  ! call update_stress_mbpol(o1+2,3,1,sixth*strs(7))
+  ! call update_stress_mbpol(o1+2,3,2,sixth*strs(8))
+  ! call update_stress_mbpol(o1+2,3,3,sixth*strs(9))
+  !
+  ! call update_stress_mbpol(o2,1,1,sixth*strs(1))
+  ! call update_stress_mbpol(o2,1,2,sixth*strs(2))
+  ! call update_stress_mbpol(o2,1,3,sixth*strs(3))
+  ! call update_stress_mbpol(o2,2,1,sixth*strs(4))
+  ! call update_stress_mbpol(o2,2,2,sixth*strs(5))
+  ! call update_stress_mbpol(o2,2,3,sixth*strs(6))
+  ! call update_stress_mbpol(o2,3,1,sixth*strs(7))
+  ! call update_stress_mbpol(o2,3,2,sixth*strs(8))
+  ! call update_stress_mbpol(o2,3,3,sixth*strs(9))
+  ! call update_stress_mbpol(o2+1,1,1,sixth*strs(1))
+  ! call update_stress_mbpol(o2+1,1,2,sixth*strs(2))
+  ! call update_stress_mbpol(o2+1,1,3,sixth*strs(3))
+  ! call update_stress_mbpol(o2+1,2,1,sixth*strs(4))
+  ! call update_stress_mbpol(o2+1,2,2,sixth*strs(5))
+  ! call update_stress_mbpol(o2+1,2,3,sixth*strs(6))
+  ! call update_stress_mbpol(o2+1,3,1,sixth*strs(7))
+  ! call update_stress_mbpol(o2+1,3,2,sixth*strs(8))
+  ! call update_stress_mbpol(o2+1,3,3,sixth*strs(9))
+  ! call update_stress_mbpol(o2+2,1,1,sixth*strs(1))
+  ! call update_stress_mbpol(o2+2,1,2,sixth*strs(2))
+  ! call update_stress_mbpol(o2+2,1,3,sixth*strs(3))
+  ! call update_stress_mbpol(o2+2,2,1,sixth*strs(4))
+  ! call update_stress_mbpol(o2+2,2,2,sixth*strs(5))
+  ! call update_stress_mbpol(o2+2,2,3,sixth*strs(6))
+  ! call update_stress_mbpol(o2+2,3,1,sixth*strs(7))
+  ! call update_stress_mbpol(o2+2,3,2,sixth*strs(8))
+  ! call update_stress_mbpol(o2+2,3,3,sixth*strs(9))
+  call update_stress_mbpol(o1,1,1,stress_tmp(1,1))
+  call update_stress_mbpol(o1,1,2,stress_tmp(1,2))
+  call update_stress_mbpol(o1,1,3,stress_tmp(1,3))
+  call update_stress_mbpol(o1,2,1,stress_tmp(1,4))
+  call update_stress_mbpol(o1,2,2,stress_tmp(1,5))
+  call update_stress_mbpol(o1,2,3,stress_tmp(1,6))
+  call update_stress_mbpol(o1,3,1,stress_tmp(1,7))
+  call update_stress_mbpol(o1,3,2,stress_tmp(1,8))
+  call update_stress_mbpol(o1,3,3,stress_tmp(1,9))
+  call update_stress_mbpol(o1+1,1,1,stress_tmp(2,1))
+  call update_stress_mbpol(o1+1,1,2,stress_tmp(2,2))
+  call update_stress_mbpol(o1+1,1,3,stress_tmp(2,3))
+  call update_stress_mbpol(o1+1,2,1,stress_tmp(2,4))
+  call update_stress_mbpol(o1+1,2,2,stress_tmp(2,5))
+  call update_stress_mbpol(o1+1,2,3,stress_tmp(2,6))
+  call update_stress_mbpol(o1+1,3,1,stress_tmp(2,7))
+  call update_stress_mbpol(o1+1,3,2,stress_tmp(2,8))
+  call update_stress_mbpol(o1+1,3,3,stress_tmp(2,9))
+  call update_stress_mbpol(o1+2,1,1,stress_tmp(3,1))
+  call update_stress_mbpol(o1+2,1,2,stress_tmp(3,2))
+  call update_stress_mbpol(o1+2,1,3,stress_tmp(3,3))
+  call update_stress_mbpol(o1+2,2,1,stress_tmp(3,4))
+  call update_stress_mbpol(o1+2,2,2,stress_tmp(3,5))
+  call update_stress_mbpol(o1+2,2,3,stress_tmp(3,6))
+  call update_stress_mbpol(o1+2,3,1,stress_tmp(3,7))
+  call update_stress_mbpol(o1+2,3,2,stress_tmp(3,8))
+  call update_stress_mbpol(o1+2,3,3,stress_tmp(3,9))
+
+  call update_stress_mbpol(o2,1,1,stress_tmp(4,1))
+  call update_stress_mbpol(o2,1,2,stress_tmp(4,2))
+  call update_stress_mbpol(o2,1,3,stress_tmp(4,3))
+  call update_stress_mbpol(o2,2,1,stress_tmp(4,4))
+  call update_stress_mbpol(o2,2,2,stress_tmp(4,5))
+  call update_stress_mbpol(o2,2,3,stress_tmp(4,6))
+  call update_stress_mbpol(o2,3,1,stress_tmp(4,7))
+  call update_stress_mbpol(o2,3,2,stress_tmp(4,8))
+  call update_stress_mbpol(o2,3,3,stress_tmp(4,9))
+  call update_stress_mbpol(o2+1,1,1,stress_tmp(5,1))
+  call update_stress_mbpol(o2+1,1,2,stress_tmp(5,2))
+  call update_stress_mbpol(o2+1,1,3,stress_tmp(5,3))
+  call update_stress_mbpol(o2+1,2,1,stress_tmp(5,4))
+  call update_stress_mbpol(o2+1,2,2,stress_tmp(5,5))
+  call update_stress_mbpol(o2+1,2,3,stress_tmp(5,6))
+  call update_stress_mbpol(o2+1,3,1,stress_tmp(5,7))
+  call update_stress_mbpol(o2+1,3,2,stress_tmp(5,8))
+  call update_stress_mbpol(o2+1,3,3,stress_tmp(5,9))
+  call update_stress_mbpol(o2+2,1,1,stress_tmp(6,1))
+  call update_stress_mbpol(o2+2,1,2,stress_tmp(6,2))
+  call update_stress_mbpol(o2+2,1,3,stress_tmp(6,3))
+  call update_stress_mbpol(o2+2,2,1,stress_tmp(6,4))
+  call update_stress_mbpol(o2+2,2,2,stress_tmp(6,5))
+  call update_stress_mbpol(o2+2,2,3,stress_tmp(6,6))
+  call update_stress_mbpol(o2+2,3,1,stress_tmp(6,7))
+  call update_stress_mbpol(o2+2,3,2,stress_tmp(6,8))
+  call update_stress_mbpol(o2+2,3,3,stress_tmp(6,9))
+#endif
 #endif /* HEAT_CURRENT */
 
 end subroutine do_dimer
@@ -587,6 +803,14 @@ subroutine do_trimer(imcon,cell,w1,w2,w3, &
 
 #ifdef HEAT_CURRENT
 integer, intent(in) :: o1,o2,o3
+real(8) :: force_matrix(0:242), force_tmp(3)
+integer :: iatm1, iatm2, iatm3, idx1, idx2, idx3
+real(8) :: rij_tmp(3), rij(27)
+#ifdef HEAT_STRESS
+real(8) :: stress_tmp(1:9,1:9)
+#endif
+#else
+real(8) :: force_matrix(0:242)
 #endif
    integer, intent(in) :: imcon
    real(8), intent(in) :: cell(*)
@@ -657,18 +881,90 @@ integer, intent(in) :: o1,o2,o3
       w3(k) = w2(k) - rab(k+3)
    end do
 
+#ifdef HEAT_CURRENT
+   rij(1:9)   = w1(1:9)
+   rij(10:18) = w2(1:9)
+   rij(19:27) = w3(1:9)
+#endif
+
    g1(1:9) = 0.d0
    g2(1:9) = 0.d0
    g3(1:9) = 0.d0
 
-   call mbpol_3b_poly(w1,w2,w3,e3b,g1,g2,g3)
+   call mbpol_3b_poly(w1,w2,w3,e3b,g1,g2,g3,force_matrix)
 
    engacc = engacc + e3b*engunit
 #ifdef HEAT_CURRENT
-    call update_energy_mbpol(o1,third*e3b*engunit)
-    call update_energy_mbpol(o2,third*e3b*engunit)
-    call update_energy_mbpol(o3,third*e3b*engunit)
-#endif
+    ! call update_energy_mbpol(o1,third*e3b*engunit)
+    ! call update_energy_mbpol(o2,third*e3b*engunit)
+    ! call update_energy_mbpol(o3,third*e3b*engunit)
+
+    call update_energy_mbpol(o1,nineth*e3b*engunit)
+    call update_energy_mbpol(o1+1,nineth*e3b*engunit)
+    call update_energy_mbpol(o1+2,nineth*e3b*engunit)
+
+    call update_energy_mbpol(o2,nineth*e3b*engunit)
+    call update_energy_mbpol(o2+1,nineth*e3b*engunit)
+    call update_energy_mbpol(o2+2,nineth*e3b*engunit)
+
+    call update_energy_mbpol(o3,nineth*e3b*engunit)
+    call update_energy_mbpol(o3+1,nineth*e3b*engunit)
+    call update_energy_mbpol(o3+2,nineth*e3b*engunit)
+
+    do iatm1 = 0, 8
+      do iatm2 = 0, 8
+        !if (iatm1==iatm2) cycle
+        if (iatm1 < 3) then
+          idx1 = o1 + iatm1
+          force_tmp = nineth*(/ g1(3*(iatm1+1)-2),g1(3*(iatm1+1)-1),g1(3*(iatm1+1)-0) /)
+        else if (iatm1 >= 3 .and. iatm1 < 6) then
+          idx1 = o2 + iatm1 - 3
+          force_tmp = nineth*(/ g2(3*(iatm1-2)-2),g2(3*(iatm1-2)-1),g2(3*(iatm1-2)-0) /)
+        else
+          idx1 = o3 + iatm1 - 6
+          force_tmp = nineth*(/ g3(3*(iatm1-5)-2),g3(3*(iatm1-5)-1),g3(3*(iatm1-5)-0) /)
+        end if
+
+        if (iatm2 < 3) then
+          idx2 = o1 + iatm2
+        else if (iatm2 >= 3 .and. iatm2 < 6) then
+          idx2 = o2 + iatm2 - 3
+        else
+          idx2 = o3 + iatm2 - 6
+        end if
+
+        ! force_tmp = (/force_matrix(27*iatm1 + 3*iatm2 + 0), &
+        !               force_matrix(27*iatm1 + 3*iatm2 + 1), &
+        !               force_matrix(27*iatm1 + 3*iatm2 + 2)/)
+        force_tmp = force_tmp*engunit
+
+        call update_forces(idx1,idx2,-force_tmp)
+      end do
+    end do
+
+#ifdef HEAT_STRESS
+    stress_tmp = 0.d0
+    do iatm1 = 1, 9
+      do iatm2 = 1, 9
+        if (iatm1 == iatm2) cycle
+        rij_tmp = rij(3*(iatm1-1)+1:3*(iatm1-1)+3) - rij(3*(iatm2-1)+1:3*(iatm2-1)+3)
+        force_tmp = (/-force_matrix(27*(iatm1-1)+3*(iatm2-1)+0),&
+                      -force_matrix(27*(iatm1-1)+3*(iatm2-1)+1),&
+                      -force_matrix(27*(iatm1-1)+3*(iatm2-1)+2)/)
+        stress_tmp(iatm1,1) = stress_tmp(iatm1,1) + rij_tmp(1)*force_tmp(1)
+        stress_tmp(iatm1,2) = stress_tmp(iatm1,2) + rij_tmp(1)*force_tmp(2)
+        stress_tmp(iatm1,3) = stress_tmp(iatm1,3) + rij_tmp(1)*force_tmp(3)
+        stress_tmp(iatm1,4) = stress_tmp(iatm1,4) + rij_tmp(2)*force_tmp(1)
+        stress_tmp(iatm1,5) = stress_tmp(iatm1,5) + rij_tmp(2)*force_tmp(2)
+        stress_tmp(iatm1,6) = stress_tmp(iatm1,6) + rij_tmp(2)*force_tmp(3)
+        stress_tmp(iatm1,7) = stress_tmp(iatm1,7) + rij_tmp(3)*force_tmp(1)
+        stress_tmp(iatm1,8) = stress_tmp(iatm1,8) + rij_tmp(3)*force_tmp(2)
+        stress_tmp(iatm1,9) = stress_tmp(iatm1,9) + rij_tmp(3)*force_tmp(3)
+      end do
+    end do
+    stress_tmp = -stress_tmp*0.5d0*engunit
+#endif /*HEAT_STRESS*/
+#endif /*HEAT_CURRENT*/
 
 !   if (e3b.lt.-3.d0) &
 !       & call drop_trimer(e3b,w1,w2,w3)
@@ -773,33 +1069,203 @@ integer, intent(in) :: o1,o2,o3
 #endif
 
 #ifdef HEAT_CURRENT
-call update_stress_mbpol(o1,1,1,third*strs(1))
-call update_stress_mbpol(o1,1,2,third*strs(2))
-call update_stress_mbpol(o1,1,3,third*strs(3))
-call update_stress_mbpol(o1,2,1,third*strs(4))
-call update_stress_mbpol(o1,2,2,third*strs(5))
-call update_stress_mbpol(o1,2,3,third*strs(6))
-call update_stress_mbpol(o1,3,1,third*strs(7))
-call update_stress_mbpol(o1,3,2,third*strs(8))
-call update_stress_mbpol(o1,3,3,third*strs(9))
-call update_stress_mbpol(o2,1,1,third*strs(1))
-call update_stress_mbpol(o2,1,2,third*strs(2))
-call update_stress_mbpol(o2,1,3,third*strs(3))
-call update_stress_mbpol(o2,2,1,third*strs(4))
-call update_stress_mbpol(o2,2,2,third*strs(5))
-call update_stress_mbpol(o2,2,3,third*strs(6))
-call update_stress_mbpol(o2,3,1,third*strs(7))
-call update_stress_mbpol(o2,3,2,third*strs(8))
-call update_stress_mbpol(o2,3,3,third*strs(9))
-call update_stress_mbpol(o3,1,1,third*strs(1))
-call update_stress_mbpol(o3,1,2,third*strs(2))
-call update_stress_mbpol(o3,1,3,third*strs(3))
-call update_stress_mbpol(o3,2,1,third*strs(4))
-call update_stress_mbpol(o3,2,2,third*strs(5))
-call update_stress_mbpol(o3,2,3,third*strs(6))
-call update_stress_mbpol(o3,3,1,third*strs(7))
-call update_stress_mbpol(o3,3,2,third*strs(8))
-call update_stress_mbpol(o3,3,3,third*strs(9))
+#ifdef HEAT_STRESS
+! call update_stress_mbpol(o1,1,1,third*strs(1))
+! call update_stress_mbpol(o1,1,2,third*strs(2))
+! call update_stress_mbpol(o1,1,3,third*strs(3))
+! call update_stress_mbpol(o1,2,1,third*strs(4))
+! call update_stress_mbpol(o1,2,2,third*strs(5))
+! call update_stress_mbpol(o1,2,3,third*strs(6))
+! call update_stress_mbpol(o1,3,1,third*strs(7))
+! call update_stress_mbpol(o1,3,2,third*strs(8))
+! call update_stress_mbpol(o1,3,3,third*strs(9))
+! call update_stress_mbpol(o2,1,1,third*strs(1))
+! call update_stress_mbpol(o2,1,2,third*strs(2))
+! call update_stress_mbpol(o2,1,3,third*strs(3))
+! call update_stress_mbpol(o2,2,1,third*strs(4))
+! call update_stress_mbpol(o2,2,2,third*strs(5))
+! call update_stress_mbpol(o2,2,3,third*strs(6))
+! call update_stress_mbpol(o2,3,1,third*strs(7))
+! call update_stress_mbpol(o2,3,2,third*strs(8))
+! call update_stress_mbpol(o2,3,3,third*strs(9))
+! call update_stress_mbpol(o3,1,1,third*strs(1))
+! call update_stress_mbpol(o3,1,2,third*strs(2))
+! call update_stress_mbpol(o3,1,3,third*strs(3))
+! call update_stress_mbpol(o3,2,1,third*strs(4))
+! call update_stress_mbpol(o3,2,2,third*strs(5))
+! call update_stress_mbpol(o3,2,3,third*strs(6))
+! call update_stress_mbpol(o3,3,1,third*strs(7))
+! call update_stress_mbpol(o3,3,2,third*strs(8))
+! call update_stress_mbpol(o3,3,3,third*strs(9))
+
+! call update_stress_mbpol(o1,1,1,nineth*strs(1))
+! call update_stress_mbpol(o1,1,2,nineth*strs(2))
+! call update_stress_mbpol(o1,1,3,nineth*strs(3))
+! call update_stress_mbpol(o1,2,1,nineth*strs(4))
+! call update_stress_mbpol(o1,2,2,nineth*strs(5))
+! call update_stress_mbpol(o1,2,3,nineth*strs(6))
+! call update_stress_mbpol(o1,3,1,nineth*strs(7))
+! call update_stress_mbpol(o1,3,2,nineth*strs(8))
+! call update_stress_mbpol(o1,3,3,nineth*strs(9))
+! call update_stress_mbpol(o1+1,1,1,nineth*strs(1))
+! call update_stress_mbpol(o1+1,1,2,nineth*strs(2))
+! call update_stress_mbpol(o1+1,1,3,nineth*strs(3))
+! call update_stress_mbpol(o1+1,2,1,nineth*strs(4))
+! call update_stress_mbpol(o1+1,2,2,nineth*strs(5))
+! call update_stress_mbpol(o1+1,2,3,nineth*strs(6))
+! call update_stress_mbpol(o1+1,3,1,nineth*strs(7))
+! call update_stress_mbpol(o1+1,3,2,nineth*strs(8))
+! call update_stress_mbpol(o1+1,3,3,nineth*strs(9))
+! call update_stress_mbpol(o1+2,1,1,nineth*strs(1))
+! call update_stress_mbpol(o1+2,1,2,nineth*strs(2))
+! call update_stress_mbpol(o1+2,1,3,nineth*strs(3))
+! call update_stress_mbpol(o1+2,2,1,nineth*strs(4))
+! call update_stress_mbpol(o1+2,2,2,nineth*strs(5))
+! call update_stress_mbpol(o1+2,2,3,nineth*strs(6))
+! call update_stress_mbpol(o1+2,3,1,nineth*strs(7))
+! call update_stress_mbpol(o1+2,3,2,nineth*strs(8))
+! call update_stress_mbpol(o1+2,3,3,nineth*strs(9))
+!
+! call update_stress_mbpol(o2,1,1,nineth*strs(1))
+! call update_stress_mbpol(o2,1,2,nineth*strs(2))
+! call update_stress_mbpol(o2,1,3,nineth*strs(3))
+! call update_stress_mbpol(o2,2,1,nineth*strs(4))
+! call update_stress_mbpol(o2,2,2,nineth*strs(5))
+! call update_stress_mbpol(o2,2,3,nineth*strs(6))
+! call update_stress_mbpol(o2,3,1,nineth*strs(7))
+! call update_stress_mbpol(o2,3,2,nineth*strs(8))
+! call update_stress_mbpol(o2,3,3,nineth*strs(9))
+! call update_stress_mbpol(o2+1,1,1,nineth*strs(1))
+! call update_stress_mbpol(o2+1,1,2,nineth*strs(2))
+! call update_stress_mbpol(o2+1,1,3,nineth*strs(3))
+! call update_stress_mbpol(o2+1,2,1,nineth*strs(4))
+! call update_stress_mbpol(o2+1,2,2,nineth*strs(5))
+! call update_stress_mbpol(o2+1,2,3,nineth*strs(6))
+! call update_stress_mbpol(o2+1,3,1,nineth*strs(7))
+! call update_stress_mbpol(o2+1,3,2,nineth*strs(8))
+! call update_stress_mbpol(o2+1,3,3,nineth*strs(9))
+! call update_stress_mbpol(o2+2,1,1,nineth*strs(1))
+! call update_stress_mbpol(o2+2,1,2,nineth*strs(2))
+! call update_stress_mbpol(o2+2,1,3,nineth*strs(3))
+! call update_stress_mbpol(o2+2,2,1,nineth*strs(4))
+! call update_stress_mbpol(o2+2,2,2,nineth*strs(5))
+! call update_stress_mbpol(o2+2,2,3,nineth*strs(6))
+! call update_stress_mbpol(o2+2,3,1,nineth*strs(7))
+! call update_stress_mbpol(o2+2,3,2,nineth*strs(8))
+! call update_stress_mbpol(o2+2,3,3,nineth*strs(9))
+!
+! call update_stress_mbpol(o3,1,1,nineth*strs(1))
+! call update_stress_mbpol(o3,1,2,nineth*strs(2))
+! call update_stress_mbpol(o3,1,3,nineth*strs(3))
+! call update_stress_mbpol(o3,2,1,nineth*strs(4))
+! call update_stress_mbpol(o3,2,2,nineth*strs(5))
+! call update_stress_mbpol(o3,2,3,nineth*strs(6))
+! call update_stress_mbpol(o3,3,1,nineth*strs(7))
+! call update_stress_mbpol(o3,3,2,nineth*strs(8))
+! call update_stress_mbpol(o3,3,3,nineth*strs(9))
+! call update_stress_mbpol(o3+1,1,1,nineth*strs(1))
+! call update_stress_mbpol(o3+1,1,2,nineth*strs(2))
+! call update_stress_mbpol(o3+1,1,3,nineth*strs(3))
+! call update_stress_mbpol(o3+1,2,1,nineth*strs(4))
+! call update_stress_mbpol(o3+1,2,2,nineth*strs(5))
+! call update_stress_mbpol(o3+1,2,3,nineth*strs(6))
+! call update_stress_mbpol(o3+1,3,1,nineth*strs(7))
+! call update_stress_mbpol(o3+1,3,2,nineth*strs(8))
+! call update_stress_mbpol(o3+1,3,3,nineth*strs(9))
+! call update_stress_mbpol(o3+2,1,1,nineth*strs(1))
+! call update_stress_mbpol(o3+2,1,2,nineth*strs(2))
+! call update_stress_mbpol(o3+2,1,3,nineth*strs(3))
+! call update_stress_mbpol(o3+2,2,1,nineth*strs(4))
+! call update_stress_mbpol(o3+2,2,2,nineth*strs(5))
+! call update_stress_mbpol(o3+2,2,3,nineth*strs(6))
+! call update_stress_mbpol(o3+2,3,1,nineth*strs(7))
+! call update_stress_mbpol(o3+2,3,2,nineth*strs(8))
+! call update_stress_mbpol(o3+2,3,3,nineth*strs(9))
+
+call update_stress_mbpol(o1,1,1,stress_tmp(1,1))
+call update_stress_mbpol(o1,1,2,stress_tmp(1,2))
+call update_stress_mbpol(o1,1,3,stress_tmp(1,3))
+call update_stress_mbpol(o1,2,1,stress_tmp(1,4))
+call update_stress_mbpol(o1,2,2,stress_tmp(1,5))
+call update_stress_mbpol(o1,2,3,stress_tmp(1,6))
+call update_stress_mbpol(o1,3,1,stress_tmp(1,7))
+call update_stress_mbpol(o1,3,2,stress_tmp(1,8))
+call update_stress_mbpol(o1,3,3,stress_tmp(1,9))
+call update_stress_mbpol(o1+1,1,1,stress_tmp(2,1))
+call update_stress_mbpol(o1+1,1,2,stress_tmp(2,2))
+call update_stress_mbpol(o1+1,1,3,stress_tmp(2,3))
+call update_stress_mbpol(o1+1,2,1,stress_tmp(2,4))
+call update_stress_mbpol(o1+1,2,2,stress_tmp(2,5))
+call update_stress_mbpol(o1+1,2,3,stress_tmp(2,6))
+call update_stress_mbpol(o1+1,3,1,stress_tmp(2,7))
+call update_stress_mbpol(o1+1,3,2,stress_tmp(2,8))
+call update_stress_mbpol(o1+1,3,3,stress_tmp(2,9))
+call update_stress_mbpol(o1+2,1,1,stress_tmp(3,1))
+call update_stress_mbpol(o1+2,1,2,stress_tmp(3,2))
+call update_stress_mbpol(o1+2,1,3,stress_tmp(3,3))
+call update_stress_mbpol(o1+2,2,1,stress_tmp(3,4))
+call update_stress_mbpol(o1+2,2,2,stress_tmp(3,5))
+call update_stress_mbpol(o1+2,2,3,stress_tmp(3,6))
+call update_stress_mbpol(o1+2,3,1,stress_tmp(3,7))
+call update_stress_mbpol(o1+2,3,2,stress_tmp(3,8))
+call update_stress_mbpol(o1+2,3,3,stress_tmp(3,9))
+
+call update_stress_mbpol(o2,1,1,stress_tmp(4,1))
+call update_stress_mbpol(o2,1,2,stress_tmp(4,2))
+call update_stress_mbpol(o2,1,3,stress_tmp(4,3))
+call update_stress_mbpol(o2,2,1,stress_tmp(4,4))
+call update_stress_mbpol(o2,2,2,stress_tmp(4,5))
+call update_stress_mbpol(o2,2,3,stress_tmp(4,6))
+call update_stress_mbpol(o2,3,1,stress_tmp(4,7))
+call update_stress_mbpol(o2,3,2,stress_tmp(4,8))
+call update_stress_mbpol(o2,3,3,stress_tmp(4,9))
+call update_stress_mbpol(o2+1,1,1,stress_tmp(5,1))
+call update_stress_mbpol(o2+1,1,2,stress_tmp(5,2))
+call update_stress_mbpol(o2+1,1,3,stress_tmp(5,3))
+call update_stress_mbpol(o2+1,2,1,stress_tmp(5,4))
+call update_stress_mbpol(o2+1,2,2,stress_tmp(5,5))
+call update_stress_mbpol(o2+1,2,3,stress_tmp(5,6))
+call update_stress_mbpol(o2+1,3,1,stress_tmp(5,7))
+call update_stress_mbpol(o2+1,3,2,stress_tmp(5,8))
+call update_stress_mbpol(o2+1,3,3,stress_tmp(5,9))
+call update_stress_mbpol(o2+2,1,1,stress_tmp(6,1))
+call update_stress_mbpol(o2+2,1,2,stress_tmp(6,2))
+call update_stress_mbpol(o2+2,1,3,stress_tmp(6,3))
+call update_stress_mbpol(o2+2,2,1,stress_tmp(6,4))
+call update_stress_mbpol(o2+2,2,2,stress_tmp(6,5))
+call update_stress_mbpol(o2+2,2,3,stress_tmp(6,6))
+call update_stress_mbpol(o2+2,3,1,stress_tmp(6,7))
+call update_stress_mbpol(o2+2,3,2,stress_tmp(6,8))
+call update_stress_mbpol(o2+2,3,3,stress_tmp(6,9))
+
+call update_stress_mbpol(o3,1,1,stress_tmp(7,1))
+call update_stress_mbpol(o3,1,2,stress_tmp(7,2))
+call update_stress_mbpol(o3,1,3,stress_tmp(7,3))
+call update_stress_mbpol(o3,2,1,stress_tmp(7,4))
+call update_stress_mbpol(o3,2,2,stress_tmp(7,5))
+call update_stress_mbpol(o3,2,3,stress_tmp(7,6))
+call update_stress_mbpol(o3,3,1,stress_tmp(7,7))
+call update_stress_mbpol(o3,3,2,stress_tmp(7,8))
+call update_stress_mbpol(o3,3,3,stress_tmp(7,9))
+call update_stress_mbpol(o3+1,1,1,stress_tmp(8,1))
+call update_stress_mbpol(o3+1,1,2,stress_tmp(8,2))
+call update_stress_mbpol(o3+1,1,3,stress_tmp(8,3))
+call update_stress_mbpol(o3+1,2,1,stress_tmp(8,4))
+call update_stress_mbpol(o3+1,2,2,stress_tmp(8,5))
+call update_stress_mbpol(o3+1,2,3,stress_tmp(8,6))
+call update_stress_mbpol(o3+1,3,1,stress_tmp(8,7))
+call update_stress_mbpol(o3+1,3,2,stress_tmp(8,8))
+call update_stress_mbpol(o3+1,3,3,stress_tmp(8,9))
+call update_stress_mbpol(o3+2,1,1,stress_tmp(9,1))
+call update_stress_mbpol(o3+2,1,2,stress_tmp(9,2))
+call update_stress_mbpol(o3+2,1,3,stress_tmp(9,3))
+call update_stress_mbpol(o3+2,2,1,stress_tmp(9,4))
+call update_stress_mbpol(o3+2,2,2,stress_tmp(9,5))
+call update_stress_mbpol(o3+2,2,3,stress_tmp(9,6))
+call update_stress_mbpol(o3+2,3,1,stress_tmp(9,7))
+call update_stress_mbpol(o3+2,3,2,stress_tmp(9,8))
+call update_stress_mbpol(o3+2,3,3,stress_tmp(9,9))
+#endif /* HEAT_STRESS */
 #endif /* HEAT_CURRENT */
 
 end subroutine do_trimer

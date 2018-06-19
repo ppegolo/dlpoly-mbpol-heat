@@ -1,0 +1,94 @@
+#!/usr/bin/perl
+
+use File::Basename;
+use POSIX qw(strftime);
+
+my $version = strftime "%d-%b-%Y", gmtime;
+
+#
+# shamelessly stollen from amber11/src/sander/makedepend
+#
+
+printf <<EOF;
+#
+#   Please do not edit the "depend" file directly, since it is created by the
+#   "makedepend" script.  If changes are needed, edit "makedepend" itself.
+#
+CPPFLAGS += -DVERSION="'$version-stable'"
+EOF
+
+my %used;
+my %modulefile;
+
+my @suffixes = ('.f', '.f90');
+my $mask = "*$suffixes[0]";
+for (my $n = 1; $n < scalar @suffixes; ++$n) {
+    $mask .= " *$suffixes[$n]";
+}
+
+# special cases
+my @foreign = ();#('mpi', 'netcdf');
+
+foreach (@foreign) {
+    $modulefile{$_} = '---';
+}
+
+foreach my $file (<${mask}>) {
+    next if $file =~ /^_/;
+    my $fileroot = basename($file, @suffixes);
+    open (F, "$file") || die "unable to open $file\n";
+    while (<F>) {
+        if (/^ *module /i) {
+            my ($head, $modulename) = /( *[Mm][Oo][Dd][Uu][Ll][Ee]) +(\w*)/;
+            $modulefile{$modulename} = $fileroot
+                unless $modulename =~ /procedure/i;
+        }
+    }
+    close (F);
+}
+
+foreach my $file (<${mask}>) {
+    next if $file =~ /^_/;
+
+    my $deps = '';
+    my $fileroot = basename($file, @suffixes);
+
+    #  construct the header and module dependency rules:
+
+    open (F, "$file") || die "unable to open $file\n";
+    while (<F>) {
+        if (/^ *use /i) {
+            my ($head, $usee) = /( *[Uu][Ss][Ee]) +(\w*)/;
+            die "No filename associated with module $usee\n"
+                unless exists($modulefile{$usee});
+
+            if (!exists($used{$fileroot, $modulefile{$usee}})) {
+                #  remove any circular references:
+                next if $fileroot eq $modulefile{$usee};
+                $deps .= "\\\n                    "
+                      . $modulefile{$usee} . '.o'
+                          unless $modulefile{$usee} eq '---';
+                $used{$fileroot, $modulefile{$usee}} = undef;
+            }
+        }
+
+        if (/^ *include/i) {
+            my ($head, $included) = /( *[Ii][Nn][Cc][Ll][Uu][Dd][Ee]) +'(.*)'/;
+            next if $included eq 'mpif.h';
+            next if $included eq 'VT.inc';
+            if (!exists($used{$fileroot, $included})) {
+                $deps .= "\\\n                    " . $included ;
+                $used{$fileroot, $included} = undef;
+            }
+        }
+    }
+
+    printf "$fileroot.o: $deps\n\n" unless $deps eq '';
+    printf "$fileroot.o: $file\n";
+    printf "\t\$(CPP) \$(CPPFLAGS) $file > _$file\n";
+    if ($file =~ /\.f90$/) {
+        printf "\t\$(F90) -c \$(F90FLAGS) \$(DEBUG) -o \$@ _$file\n\n";
+    } else {
+        printf "\t\$(F77) -c \$(F77FLAGS) \$(DEBUG) -o \$@ _$file\n\n";
+    }
+}

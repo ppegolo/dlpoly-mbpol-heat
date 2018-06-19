@@ -34,7 +34,8 @@ c
 #endif /* TTM_FORCE_DECOMPOSITION */
 
 #ifdef HEAT_CURRENT
-      use heatcurrent, only: update_stress_srf, update_energy_srf
+      use heatcurrent, only: update_stress_srf, update_energy_srf,
+     x                       update_forces
 #endif /* HEAT_CURRENT */
 
 #include "dl_params.inc"
@@ -54,6 +55,9 @@ CDIR$ CACHE_ALIGN fi
 #ifdef VAMPIR
       call VTBEGIN(83, ierr)
 #endif
+#ifdef HEAT_CURRENT
+      real(8) :: force_tmp(3)
+#endif /*HEAT_CURRENT*/
 c
 c     set cutoff condition for pair forces
 
@@ -170,6 +174,12 @@ c     calculate forces
             fxx(jatm) = fxx(jatm) - fx
             fyy(jatm) = fyy(jatm) - fy
             fzz(jatm) = fzz(jatm) - fz
+
+#ifdef HEAT_CURRENT
+            force_tmp = (/-fx,-fy,-fz/)
+            call update_forces(jatm,iatm,force_tmp)
+            call update_forces(iatm,jatm,-force_tmp)
+#endif /*HEAT_CURRENT*/
 !
 !     for force decompositions
 #ifdef TTM_FORCE_DECOMPOSITION
@@ -201,24 +211,26 @@ c     calculate stress tensor
 #endif
 
 #ifdef HEAT_CURRENT
-      call update_stress_srf(iatm,1,1,0.5d0*xdf(m)*fx)
-      call update_stress_srf(iatm,1,2,0.5d0*xdf(m)*fy)
-      call update_stress_srf(iatm,1,3,0.5d0*xdf(m)*fz)
-      call update_stress_srf(iatm,2,1,0.5d0*xdf(m)*fy)
-      call update_stress_srf(iatm,2,2,0.5d0*ydf(m)*fy)
-      call update_stress_srf(iatm,2,3,0.5d0*ydf(m)*fz)
-      call update_stress_srf(iatm,3,1,0.5d0*xdf(m)*fz)
-      call update_stress_srf(iatm,3,2,0.5d0*ydf(m)*fz)
-      call update_stress_srf(iatm,3,3,0.5d0*zdf(m)*fz)
-      call update_stress_srf(jatm,1,1,0.5d0*xdf(m)*fx)
-      call update_stress_srf(jatm,1,2,0.5d0*xdf(m)*fy)
-      call update_stress_srf(jatm,1,3,0.5d0*xdf(m)*fz)
-      call update_stress_srf(jatm,2,1,0.5d0*xdf(m)*fy)
-      call update_stress_srf(jatm,2,2,0.5d0*ydf(m)*fy)
-      call update_stress_srf(jatm,2,3,0.5d0*ydf(m)*fz)
-      call update_stress_srf(jatm,3,1,0.5d0*xdf(m)*fz)
-      call update_stress_srf(jatm,3,2,0.5d0*ydf(m)*fz)
-      call update_stress_srf(jatm,3,3,0.5d0*zdf(m)*fz)
+#ifdef HEAT_STRESS
+      call update_stress_srf(iatm,1,1,-0.5d0*xdf(m)*fx)
+      call update_stress_srf(iatm,1,2,-0.5d0*xdf(m)*fy)
+      call update_stress_srf(iatm,1,3,-0.5d0*xdf(m)*fz)
+      call update_stress_srf(iatm,2,1,-0.5d0*xdf(m)*fy)
+      call update_stress_srf(iatm,2,2,-0.5d0*ydf(m)*fy)
+      call update_stress_srf(iatm,2,3,-0.5d0*ydf(m)*fz)
+      call update_stress_srf(iatm,3,1,-0.5d0*xdf(m)*fz)
+      call update_stress_srf(iatm,3,2,-0.5d0*ydf(m)*fz)
+      call update_stress_srf(iatm,3,3,-0.5d0*zdf(m)*fz)
+      call update_stress_srf(jatm,1,1,-0.5d0*xdf(m)*fx)
+      call update_stress_srf(jatm,1,2,-0.5d0*xdf(m)*fy)
+      call update_stress_srf(jatm,1,3,-0.5d0*xdf(m)*fz)
+      call update_stress_srf(jatm,2,1,-0.5d0*xdf(m)*fy)
+      call update_stress_srf(jatm,2,2,-0.5d0*ydf(m)*fy)
+      call update_stress_srf(jatm,2,3,-0.5d0*ydf(m)*fz)
+      call update_stress_srf(jatm,3,1,-0.5d0*xdf(m)*fz)
+      call update_stress_srf(jatm,3,2,-0.5d0*ydf(m)*fz)
+      call update_stress_srf(jatm,3,3,-0.5d0*zdf(m)*fz)
+#endif
 #endif /* HEAT_CURRENT */
 c
 c     calculate virial

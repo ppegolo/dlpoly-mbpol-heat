@@ -2,7 +2,7 @@
 #   Please do not edit the "depend" file directly, since it is created by the
 #   "makedepend" script.  If changes are needed, edit "makedepend" itself.
 #
-CPPFLAGS += -DVERSION="'15-mag-2018-stable'"
+CPPFLAGS += -DVERSION="'31-mag-2018-stable'"
 angfrc.o: \
                     module.o\
                     heatcurrent.o
@@ -338,6 +338,9 @@ error.o: error.f
 	$(CPP) $(CPPFLAGS) error.f > _error.f
 	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _error.f
 
+ewald1.o: \
+                    heatcurrent.o
+
 ewald1.o: ewald1.f
 	$(CPP) $(CPPFLAGS) ewald1.f > _ewald1.f
 	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald1.f
@@ -360,6 +363,9 @@ ewald1p.o: \
 ewald1p.o: ewald1p.f
 	$(CPP) $(CPPFLAGS) ewald1p.f > _ewald1p.f
 	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald1p.f
+
+ewald2.o: \
+                    heatcurrent.o
 
 ewald2.o: ewald2.f
 	$(CPP) $(CPPFLAGS) ewald2.f > _ewald2.f
@@ -391,6 +397,9 @@ ewald2p.o: \
 ewald2p.o: ewald2p.f
 	$(CPP) $(CPPFLAGS) ewald2p.f > _ewald2p.f
 	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald2p.f
+
+ewald3.o: \
+                    heatcurrent.o
 
 ewald3.o: ewald3.f
 	$(CPP) $(CPPFLAGS) ewald3.f > _ewald3.f
@@ -491,7 +500,8 @@ fldscan.o: fldscan.f
 	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _fldscan.f
 
 forces.o: \
-                    module.o
+                    module.o\
+                    heatcurrent.o
 
 forces.o: forces.f
 	$(CPP) $(CPPFLAGS) forces.f > _forces.f
@@ -1085,6 +1095,9 @@ spme_for.o: spme_for.f
 	$(CPP) $(CPPFLAGS) spme_for.f > _spme_for.f
 	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _spme_for.f
 
+srfrce.o: \
+                    heatcurrent.o
+
 srfrce.o: srfrce.f
 	$(CPP) $(CPPFLAGS) srfrce.f > _srfrce.f
 	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _srfrce.f
@@ -1479,3 +1492,4 @@ tang-toennies.o: tang-toennies.f90
 vibrational_module.o: vibrational_module.f90
 	$(CPP) $(CPPFLAGS) vibrational_module.f90 > _vibrational_module.f90
 	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _vibrational_module.f90
+

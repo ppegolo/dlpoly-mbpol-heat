@@ -223,13 +223,15 @@ c     convert plrc to a viral term
       virlrc = plrc*(-3.d0*volm)
 
 #ifdef HEAT_CURRENT
+#ifdef HEAT_STRESS
 ! add the same long-range energy and stress contribution to each atom.
-      do i=1,mxatms
+      /* do i=1,mxatms
         call update_energy_lrcorrect(i,elrc/mxatms)
         call update_stress_lrcorrect(i,1,1,-virlrc/(3.d0*mxatms))
         call update_stress_lrcorrect(i,2,2,-virlrc/(3.d0*mxatms))
         call update_stress_lrcorrect(i,3,3,-virlrc/(3.d0*mxatms))
-      enddo
+      enddo  */
+#endif
 #endif /* HEAT_CURRENT */
 
 #ifdef VAMPIR

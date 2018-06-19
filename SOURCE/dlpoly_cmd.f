@@ -93,13 +93,17 @@ c
      x                              zero_heat,
      x                              kinetic_energy_per_atom,
      x                              potential_energy_per_atom,
+     x                              potential_energy_per_atom2,
      x                              compute_heat_flux,
+     x                              compute_heat_flux2,
      x                              write_heat_flux,
+     x                              write_heat_flux2,
      x                              stress_per_atom,
      x                              total_energy_cpe,
      x                              total_potential_energy,
      x                              total_kinetic_energy,
      x                              final_sum,
+     x                              final_sum_epot,
      x                              final_sum_heat_flux,
      x                              update_kinetic_energy, !PPnote_: remove if unnecessary
      x                              total_stress,
@@ -107,7 +111,14 @@ c
      x                              write_stress,
      x                              distribute_stress,
      x                              distribute_energy,
-     x                              deallocate_heat
+     x                              distribute_energy2,
+     x                              write_force_matrix,
+     x                              distribute_forces,
+     x                              deallocate_heat,
+     x                              initialize_potential_energy,
+     x                              save_last_energy,
+     x                              check_forces,
+     x                              compute_stress
 #endif /* HEAT_CURRENT */
 #ifdef HEAT_CHECK
       use heat_check, only:
@@ -226,6 +237,12 @@ c----------------------------------------------------------------
       character*8, allocatable :: atmnam(:)
       character*8, allocatable :: sitnam(:)
       character*8, allocatable :: unqatm(:)
+
+#ifdef HEAT_CURRENT
+      logical :: firststep = .true.
+      ! PP_:
+      real(8), allocatable :: fxx_tmp(:)
+#endif /*HEAT_CURRENT*/
 
 #ifdef SHMEM
       pointer (buf_ptr,buffer)
@@ -510,6 +527,8 @@ c     open main printing file
      x  i3,' of ',i3,')',
      x  /,/,30x,'Running on ',i3,' nodes',/,/)")
      x  (ring_rank+1),ring_size,mxnode
+
+
 c
 c     define all major array sizes
 
@@ -573,6 +592,9 @@ c     check character memory allocation
       allocate (flx(mxatms),fly(mxatms),flz(mxatms),stat=memr(14))
       allocate (fpx(mxatms),fpy(mxatms),fpz(mxatms),stat=memr(15))
       allocate (fxx(mxatms),fyy(mxatms),fzz(mxatms),stat=memr(16))
+#ifdef HEAT_CURRENT
+      allocate (fxx_tmp(mxatms))
+#endif
       allocate (gcmx(mxgrp),gcmy(mxgrp),gcmz(mxgrp),stat=memr(17))
       allocate (gcmx1(msgrp),gcmy1(msgrp),gcmz1(msgrp),stat=memr(18))
       allocate (gvx1(msgrp),gvy1(msgrp),gvz1(msgrp),stat=memr(19))
@@ -2395,10 +2417,13 @@ c     calculate bond forces
       call timchk(0,timeint)
       timetot=timeint
 #endif
+
+
       if (ntbond.gt.0) call bndfrc
      x  (idnode,imcon,mxnode,ntbond,engbnd,virbnd,keybnd,listbnd,
      x  cell,fxx,fyy,fzz,prmbnd,xxx,yyy,zzz,xdab,ydab,zdab,stress,
      x  buffer,lttm,wat_monomer_ener)
+
 c
 c     calculate valence angle forces
 
@@ -2406,6 +2431,8 @@ c     calculate valence angle forces
      x  (idnode,imcon,mxnode,ntangl,engang,virang,keyang,listang,
      x  cell,fxx,fyy,fzz,prmang,xxx,yyy,zzz,xdab,ydab,zdab,xdbc,
      x  ydbc,zdbc,stress,buffer,lttm,wat_monomer_ener)
+
+
 !
 !     intramolecular potential for TTM2 model
 !     if( lttm .and. ntangl.gt.0 ) then
@@ -2573,7 +2600,9 @@ c     distribute force on the m-site to oxygen and hydrogen
 #ifdef HEAT_CURRENT
           call distribute_stress(ioxy,ih1,ih2,mttm2,gammattm)
           call distribute_energy(ioxy,ih1,ih2,mttm2,gammattm)
+          call distribute_forces(ioxy,ih1,ih2,mttm2,gammattm)
 #endif /* HEAT_CURRENT */
+
         enddo
 
       endif
@@ -3191,23 +3220,50 @@ c             Transform cartesian positions into normal mode positions.
 #endif
 
 #ifdef HEAT_CURRENT
-        call potential_energy_per_atom()
-        call stress_per_atom()
-        call compute_heat_flux(vxx,vyy,vzz)
-        call final_sum_heat_flux()
-        call final_sum()
+
+      call potential_energy_per_atom()
+#ifdef HEAT_STRESS
+      call stress_per_atom()
+      call compute_heat_flux(vxx,vyy,vzz)
+#endif /* HEAT_STRESS */
+      /* if (firststep) then
+        call initialize_potential_energy(Epot_pimd,vxx,vyy,vzz)
+        firststep = .false.
+      else
+        call potential_energy_per_atom2(tstep,vxx,vyy,vzz)
+      end if
+       */
+
+      call compute_heat_flux2(xxx,yyy,zzz,vxx,vyy,vzz,gammattm)
+
+      call final_sum_heat_flux()
+      call final_sum()
 #endif /* HEAT_CURRENT */
 
             if (lhead) then
                call centroid_traject_pimd
-     x           (nstep,keybin,time,mxatms,natms_r,atmnam,
-     x            imcon,cell,xxx,yyy,zzz,lcavity)
+     x           (keytrj,nstep,keybin,time,mxatms,natms_r,atmnam,
+     x            imcon,cell,xxx,yyy,zzz,vxx,vyy,vzz,
+     x            fxx,fyy,fzz,lcavity)
 
 #ifdef HEAT_CURRENT
-               call write_heat_flux(time)
+            if (idnode==0) call write_heat_flux(time,
+     x           bead_suffix)
+            if (idnode==0) call write_force_matrix
+     x                     (time,bead_suffix)
+            if ((.not. firststep) .and. idnode==0) then
+              call write_heat_flux2(time,bead_suffix)
+            end if
+            if (idnode==0) then
+              call save_last_energy(nstep,time,
+     x          bead_suffix)
+            end if
+
 #ifdef HEAT_CHECK
-               call write_check(time,conv_energy,prsunt/stpvol)
+            if (idnode==0) call write_check(time,
+     x            conv_energy,prsunt/stpvol,bead_suffix)
 #endif /* HEAT_CHECK */
+
 #endif /* HEAT_CURRENT */
 
                call centroid_write_config
@@ -3380,13 +3436,31 @@ c             Transform cartesian positions into normal mode positions.
            if (pimd_head) then
               call centroid_traject_cmd
      x           (keytrj,keybin,nstep,time,mxatms,natms_r,atmnam,cell,
-     x            npx,npy,npz,nvx,nvy,nvz,nfx,nfy,nfz)
+     x            npx,npy,npz,nvx,nvy,nvz,nfx,nfy,nfz,xxx,yyy,zzz,
+     x            vxx,vyy,vzz,fxx,fyy,fzz)
            end if
 
 #ifdef HEAT_CURRENT
+
           call potential_energy_per_atom()
+#ifdef HEAT_STRESS
           call stress_per_atom()
           call compute_heat_flux(vxx,vyy,vzz)
+#endif /* HEAT_STRESS */
+          /* if (firststep) then
+            call initialize_potential_energy(Epot_pimd,vxx,vyy,vzz)
+          else
+            call potential_energy_per_atom2(tstep,vxx,vyy,vzz)
+          end if
+           */
+          call compute_heat_flux2(xxx,yyy,zzz,vxx,vyy,vzz,gammattm)
+
+          /* if (firststep) then
+            call final_sum_epot()
+            firststep = .false.
+          end if
+           */
+
           call final_sum_heat_flux()
           call final_sum()
 #endif /* HEAT_CURRENT */
@@ -3403,9 +3477,22 @@ c             Transform cartesian positions into normal mode positions.
            if (lhead) then
 
 #ifdef HEAT_CURRENT
-              call write_heat_flux(time)
+            if (idnode==0) call write_heat_flux(time,
+     x           bead_suffix)
+            if (idnode==0) call write_force_matrix
+     x                     (time,bead_suffix)
+            if (idnode==0) call compute_stress(time,
+     x        xxx, yyy, zzz, prsunt/stpvol)
+            if (idnode==0) then
+              call write_heat_flux2(time,bead_suffix)
+            end if
+            if (idnode==0) then
+              call save_last_energy(nstep,time,
+     x          bead_suffix)
+            end if
 #ifdef HEAT_CHECK
-              call write_check(time,conv_energy,prsunt/stpvol)
+            if (idnode==0) call write_check(time,
+     x            conv_energy,prsunt/stpvol,bead_suffix)
 #endif /* HEAT_CHECK */
 #endif /* HEAT_CURRENT */
 

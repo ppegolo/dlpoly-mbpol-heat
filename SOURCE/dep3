@@ -1,0 +1,1497 @@
+#
+#   Please do not edit the "depend" file directly, since it is created by the
+#   "makedepend" script.  If changes are needed, edit "makedepend" itself.
+#
+CPPFLAGS += -DVERSION="'06-giu-2018-stable'"
+angfrc.o: \
+                    module.o\
+                    heatcurrent.o
+
+angfrc.o: angfrc.f
+	$(CPP) $(CPPFLAGS) angfrc.f > _angfrc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _angfrc.f
+
+assert.o: assert.f
+	$(CPP) $(CPPFLAGS) assert.f > _assert.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _assert.f
+
+bndfrc.o: \
+                    module.o\
+                    heatcurrent.o
+
+bndfrc.o: bndfrc.f
+	$(CPP) $(CPPFLAGS) bndfrc.f > _bndfrc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _bndfrc.f
+
+bspcoe.o: bspcoe.f
+	$(CPP) $(CPPFLAGS) bspcoe.f > _bspcoe.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _bspcoe.f
+
+bspgen.o: bspgen.f
+	$(CPP) $(CPPFLAGS) bspgen.f > _bspgen.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _bspgen.f
+
+cenmas.o: cenmas.f
+	$(CPP) $(CPPFLAGS) cenmas.f > _cenmas.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _cenmas.f
+
+centroid_init.o: \
+                    centroid_module.o\
+                    langevin.o\
+                    multibead.o\
+                    nose_hoover_module.o
+
+centroid_init.o: centroid_init.f
+	$(CPP) $(CPPFLAGS) centroid_init.f > _centroid_init.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_init.f
+
+centroid_matrix.o: \
+                    centroid_module.o\
+                    langevin.o\
+                    multibead.o
+
+centroid_matrix.o: centroid_matrix.f
+	$(CPP) $(CPPFLAGS) centroid_matrix.f > _centroid_matrix.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_matrix.f
+
+centroid_read_config.o: \
+                    multibead.o\
+                    centroid_module.o
+
+centroid_read_config.o: centroid_read_config.f
+	$(CPP) $(CPPFLAGS) centroid_read_config.f > _centroid_read_config.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_read_config.f
+
+centroid_read_dipole.o: \
+                    multibead.o\
+                    centroid_module.o
+
+centroid_read_dipole.o: centroid_read_dipole.f
+	$(CPP) $(CPPFLAGS) centroid_read_dipole.f > _centroid_read_dipole.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_read_dipole.f
+
+centroid_spring_force.o: \
+                    multibead.o\
+                    centroid_module.o\
+                    langevin.o
+
+centroid_spring_force.o: centroid_spring_force.f
+	$(CPP) $(CPPFLAGS) centroid_spring_force.f > _centroid_spring_force.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_spring_force.f
+
+centroid_traject_bead.o: \
+                    multibead.o\
+                    centroid_module.o
+
+centroid_traject_bead.o: centroid_traject_bead.f
+	$(CPP) $(CPPFLAGS) centroid_traject_bead.f > _centroid_traject_bead.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_traject_bead.f
+
+centroid_traject_cmd.o: \
+                    centroid_module.o
+
+centroid_traject_cmd.o: centroid_traject_cmd.f
+	$(CPP) $(CPPFLAGS) centroid_traject_cmd.f > _centroid_traject_cmd.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_traject_cmd.f
+
+centroid_traject_pimd.o: \
+                    multibead.o\
+                    centroid_make_cavity.o\
+                    centroid_module.o
+
+centroid_traject_pimd.o: centroid_traject_pimd.f
+	$(CPP) $(CPPFLAGS) centroid_traject_pimd.f > _centroid_traject_pimd.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_traject_pimd.f
+
+centroid_vertest.o: \
+                    multibead.o
+
+centroid_vertest.o: centroid_vertest.f
+	$(CPP) $(CPPFLAGS) centroid_vertest.f > _centroid_vertest.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_vertest.f
+
+centroid_write_config.o: \
+                    multibead.o\
+                    centroid_module.o
+
+centroid_write_config.o: centroid_write_config.f
+	$(CPP) $(CPPFLAGS) centroid_write_config.f > _centroid_write_config.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_write_config.f
+
+centroid_write_dipole.o: \
+                    multibead.o\
+                    centroid_module.o
+
+centroid_write_dipole.o: centroid_write_dipole.f
+	$(CPP) $(CPPFLAGS) centroid_write_dipole.f > _centroid_write_dipole.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _centroid_write_dipole.f
+
+cerfr.o: cerfr.f
+	$(CPP) $(CPPFLAGS) cerfr.f > _cerfr.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _cerfr.f
+
+cfgscan.o: \
+                    multibead.o
+
+cfgscan.o: cfgscan.f
+	$(CPP) $(CPPFLAGS) cfgscan.f > _cfgscan.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _cfgscan.f
+
+conscan.o: conscan.f
+	$(CPP) $(CPPFLAGS) conscan.f > _conscan.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _conscan.f
+
+corshl.o: corshl.f
+	$(CPP) $(CPPFLAGS) corshl.f > _corshl.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _corshl.f
+
+coul0.o: coul0.f
+	$(CPP) $(CPPFLAGS) coul0.f > _coul0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _coul0.f
+
+coul0_ttm2.o: coul0_ttm2.f
+	$(CPP) $(CPPFLAGS) coul0_ttm2.f > _coul0_ttm2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _coul0_ttm2.f
+
+coul0neu.o: coul0neu.f
+	$(CPP) $(CPPFLAGS) coul0neu.f > _coul0neu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _coul0neu.f
+
+coul1.o: coul1.f
+	$(CPP) $(CPPFLAGS) coul1.f > _coul1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _coul1.f
+
+coul2.o: coul2.f
+	$(CPP) $(CPPFLAGS) coul2.f > _coul2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _coul2.f
+
+coul2neu.o: coul2neu.f
+	$(CPP) $(CPPFLAGS) coul2neu.f > _coul2neu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _coul2neu.f
+
+coul3.o: coul3.f
+	$(CPP) $(CPPFLAGS) coul3.f > _coul3.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _coul3.f
+
+coul3neu.o: coul3neu.f
+	$(CPP) $(CPPFLAGS) coul3neu.f > _coul3neu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _coul3neu.f
+
+coul4.o: coul4.f
+	$(CPP) $(CPPFLAGS) coul4.f > _coul4.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _coul4.f
+
+coulomb_polar.o: \
+                    heatcurrent.o
+
+coulomb_polar.o: coulomb_polar.f
+	$(CPP) $(CPPFLAGS) coulomb_polar.f > _coulomb_polar.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _coulomb_polar.f
+
+cpy_rtc.o: cpy_rtc.f
+	$(CPP) $(CPPFLAGS) cpy_rtc.f > _cpy_rtc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _cpy_rtc.f
+
+crecv.o: \
+                    multibead.o
+
+crecv.o: crecv.f
+	$(CPP) $(CPPFLAGS) crecv.f > _crecv.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _crecv.f
+
+csend.o: \
+                    multibead.o
+
+csend.o: csend.f
+	$(CPP) $(CPPFLAGS) csend.f > _csend.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _csend.f
+
+dblstr.o: dblstr.f
+	$(CPP) $(CPPFLAGS) dblstr.f > _dblstr.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dblstr.f
+
+dcell.o: dcell.f
+	$(CPP) $(CPPFLAGS) dcell.f > _dcell.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dcell.f
+
+dcp_0.o: dcp_0.f
+	$(CPP) $(CPPFLAGS) dcp_0.f > _dcp_0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dcp_0.f
+
+dcp_h0.o: dcp_h0.f
+	$(CPP) $(CPPFLAGS) dcp_h0.f > _dcp_h0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dcp_h0.f
+
+dcp_h1.o: dcp_h1.f
+	$(CPP) $(CPPFLAGS) dcp_h1.f > _dcp_h1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dcp_h1.f
+
+dcp_h2.o: dcp_h2.f
+	$(CPP) $(CPPFLAGS) dcp_h2.f > _dcp_h2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dcp_h2.f
+
+ddfield.o: ddfield.f
+	$(CPP) $(CPPFLAGS) ddfield.f > _ddfield.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ddfield.f
+
+denloc.o: denloc.f
+	$(CPP) $(CPPFLAGS) denloc.f > _denloc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _denloc.f
+
+denloc_4pt.o: denloc_4pt.f
+	$(CPP) $(CPPFLAGS) denloc_4pt.f > _denloc_4pt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _denloc_4pt.f
+
+denloc_rsq.o: denloc_rsq.f
+	$(CPP) $(CPPFLAGS) denloc_rsq.f > _denloc_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _denloc_rsq.f
+
+diffsn0.o: diffsn0.f
+	$(CPP) $(CPPFLAGS) diffsn0.f > _diffsn0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _diffsn0.f
+
+diffsn1.o: diffsn1.f
+	$(CPP) $(CPPFLAGS) diffsn1.f > _diffsn1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _diffsn1.f
+
+dihfrc.o: dihfrc.f
+	$(CPP) $(CPPFLAGS) dihfrc.f > _dihfrc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dihfrc.f
+
+dihfrc_4pt.o: dihfrc_4pt.f
+	$(CPP) $(CPPFLAGS) dihfrc_4pt.f > _dihfrc_4pt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dihfrc_4pt.f
+
+dihfrc_rsq.o: dihfrc_rsq.f
+	$(CPP) $(CPPFLAGS) dihfrc_rsq.f > _dihfrc_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dihfrc_rsq.f
+
+dlpfft3.o: dlpfft3.f
+	$(CPP) $(CPPFLAGS) dlpfft3.f > _dlpfft3.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dlpfft3.f
+
+dlpoly.o: \
+                    module.o\
+                    aspc.o\
+                    multibead.o
+
+dlpoly.o: dlpoly.f
+	$(CPP) $(CPPFLAGS) dlpoly.f > _dlpoly.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dlpoly.f
+
+dlpoly_cmd.o: \
+                    module.o\
+                    multibead.o\
+                    centroid_dcp.o\
+                    centroid_make_cavity.o\
+                    mbpol.o\
+                    mbnrg.o\
+                    heatcurrent.o\
+                    heat_check.o\
+                    nose_hoover_module.o\
+                    centroid_module.o\
+                    aspc.o\
+                    langevin.o\
+                    cv.o\
+                    optimization_module.o\
+                    vibrational_module.o\
+                    centroid_2D_IR.o\
+                    centroid_recalc_dip.o\
+                    ipi.o
+
+dlpoly_cmd.o: dlpoly_cmd.f
+	$(CPP) $(CPPFLAGS) dlpoly_cmd.f > _dlpoly_cmd.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _dlpoly_cmd.f
+
+duni.o: duni.f
+	$(CPP) $(CPPFLAGS) duni.f > _duni.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _duni.f
+
+ele_prd.o: ele_prd.f
+	$(CPP) $(CPPFLAGS) ele_prd.f > _ele_prd.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ele_prd.f
+
+engforce.o: engforce.f
+	$(CPP) $(CPPFLAGS) engforce.f > _engforce.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _engforce.f
+
+erfcc.o: erfcc.f
+	$(CPP) $(CPPFLAGS) erfcc.f > _erfcc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _erfcc.f
+
+erfcgen.o: erfcgen.f
+	$(CPP) $(CPPFLAGS) erfcgen.f > _erfcgen.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _erfcgen.f
+
+erfcgen_rsq.o: erfcgen_rsq.f
+	$(CPP) $(CPPFLAGS) erfcgen_rsq.f > _erfcgen_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _erfcgen_rsq.f
+
+erfcgenp.o: erfcgenp.f
+	$(CPP) $(CPPFLAGS) erfcgenp.f > _erfcgenp.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _erfcgenp.f
+
+error.o: \
+                    multibead.o
+
+error.o: error.f
+	$(CPP) $(CPPFLAGS) error.f > _error.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _error.f
+
+ewald1.o: \
+                    heatcurrent.o
+
+ewald1.o: ewald1.f
+	$(CPP) $(CPPFLAGS) ewald1.f > _ewald1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald1.f
+
+ewald1a.o: ewald1a.f
+	$(CPP) $(CPPFLAGS) ewald1a.f > _ewald1a.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald1a.f
+
+ewald1cp.o: \
+                    module.o
+
+ewald1cp.o: ewald1cp.f
+	$(CPP) $(CPPFLAGS) ewald1cp.f > _ewald1cp.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald1cp.f
+
+ewald1p.o: \
+                    module.o\
+                    heatcurrent.o
+
+ewald1p.o: ewald1p.f
+	$(CPP) $(CPPFLAGS) ewald1p.f > _ewald1p.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald1p.f
+
+ewald2.o: \
+                    heatcurrent.o
+
+ewald2.o: ewald2.f
+	$(CPP) $(CPPFLAGS) ewald2.f > _ewald2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald2.f
+
+ewald2_4pt.o: ewald2_4pt.f
+	$(CPP) $(CPPFLAGS) ewald2_4pt.f > _ewald2_4pt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald2_4pt.f
+
+ewald2_rsq.o: ewald2_rsq.f
+	$(CPP) $(CPPFLAGS) ewald2_rsq.f > _ewald2_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald2_rsq.f
+
+ewald2cp.o: \
+                    module.o
+
+ewald2cp.o: ewald2cp.f
+	$(CPP) $(CPPFLAGS) ewald2cp.f > _ewald2cp.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald2cp.f
+
+ewald2neu.o: ewald2neu.f
+	$(CPP) $(CPPFLAGS) ewald2neu.f > _ewald2neu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald2neu.f
+
+ewald2p.o: \
+                    module.o\
+                    heatcurrent.o
+
+ewald2p.o: ewald2p.f
+	$(CPP) $(CPPFLAGS) ewald2p.f > _ewald2p.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald2p.f
+
+ewald3.o: \
+                    heatcurrent.o
+
+ewald3.o: ewald3.f
+	$(CPP) $(CPPFLAGS) ewald3.f > _ewald3.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald3.f
+
+ewald3_neu.o: ewald3_neu.f
+	$(CPP) $(CPPFLAGS) ewald3_neu.f > _ewald3_neu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald3_neu.f
+
+ewald3cp.o: \
+                    module.o
+
+ewald3cp.o: ewald3cp.f
+	$(CPP) $(CPPFLAGS) ewald3cp.f > _ewald3cp.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald3cp.f
+
+ewald3p.o: \
+                    module.o\
+                    heatcurrent.o
+
+ewald3p.o: ewald3p.f
+	$(CPP) $(CPPFLAGS) ewald3p.f > _ewald3p.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald3p.f
+
+ewald4.o: ewald4.f
+	$(CPP) $(CPPFLAGS) ewald4.f > _ewald4.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald4.f
+
+ewald4_4pt.o: ewald4_4pt.f
+	$(CPP) $(CPPFLAGS) ewald4_4pt.f > _ewald4_4pt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald4_4pt.f
+
+ewald4_rsq.o: ewald4_rsq.f
+	$(CPP) $(CPPFLAGS) ewald4_rsq.f > _ewald4_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald4_rsq.f
+
+ewald4cp.o: ewald4cp.f
+	$(CPP) $(CPPFLAGS) ewald4cp.f > _ewald4cp.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald4cp.f
+
+ewald4p.o: ewald4p.f
+	$(CPP) $(CPPFLAGS) ewald4p.f > _ewald4p.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald4p.f
+
+ewald_spme.o: ewald_spme.f
+	$(CPP) $(CPPFLAGS) ewald_spme.f > _ewald_spme.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ewald_spme.f
+
+exclude.o: exclude.f
+	$(CPP) $(CPPFLAGS) exclude.f > _exclude.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _exclude.f
+
+exclude_atom.o: exclude_atom.f
+	$(CPP) $(CPPFLAGS) exclude_atom.f > _exclude_atom.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _exclude_atom.f
+
+exclude_link.o: exclude_link.f
+	$(CPP) $(CPPFLAGS) exclude_link.f > _exclude_link.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _exclude_link.f
+
+exclude_ttm.o: exclude_ttm.f
+	$(CPP) $(CPPFLAGS) exclude_ttm.f > _exclude_ttm.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _exclude_ttm.f
+
+excludeneu.o: excludeneu.f
+	$(CPP) $(CPPFLAGS) excludeneu.f > _excludeneu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _excludeneu.f
+
+expint.o: expint.f
+	$(CPP) $(CPPFLAGS) expint.f > _expint.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _expint.f
+
+extnfld.o: extnfld.f
+	$(CPP) $(CPPFLAGS) extnfld.f > _extnfld.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _extnfld.f
+
+fbpfrc.o: fbpfrc.f
+	$(CPP) $(CPPFLAGS) fbpfrc.f > _fbpfrc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _fbpfrc.f
+
+fcap.o: fcap.f
+	$(CPP) $(CPPFLAGS) fcap.f > _fcap.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _fcap.f
+
+fftw3.o: fftw3.f
+	$(CPP) $(CPPFLAGS) fftw3.f > _fftw3.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _fftw3.f
+
+fixme.o: \
+                    multibead.o
+
+fixme.o: fixme.f
+	$(CPP) $(CPPFLAGS) fixme.f > _fixme.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _fixme.f
+
+fldscan.o: fldscan.f
+	$(CPP) $(CPPFLAGS) fldscan.f > _fldscan.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _fldscan.f
+
+forces.o: \
+                    module.o
+
+forces.o: forces.f
+	$(CPP) $(CPPFLAGS) forces.f > _forces.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _forces.f
+
+forces_opt.o: forces_opt.f
+	$(CPP) $(CPPFLAGS) forces_opt.f > _forces_opt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _forces_opt.f
+
+forcesneu.o: forcesneu.f
+	$(CPP) $(CPPFLAGS) forcesneu.f > _forcesneu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _forcesneu.f
+
+forgen.o: forgen.f
+	$(CPP) $(CPPFLAGS) forgen.f > _forgen.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _forgen.f
+
+forgen_rsq.o: forgen_rsq.f
+	$(CPP) $(CPPFLAGS) forgen_rsq.f > _forgen_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _forgen_rsq.f
+
+fortab.o: fortab.f
+	$(CPP) $(CPPFLAGS) fortab.f > _fortab.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _fortab.f
+
+fortab_rsq.o: fortab_rsq.f
+	$(CPP) $(CPPFLAGS) fortab_rsq.f > _fortab_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _fortab_rsq.f
+
+freeze.o: freeze.f
+	$(CPP) $(CPPFLAGS) freeze.f > _freeze.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _freeze.f
+
+frprmn.o: frprmn.f
+	$(CPP) $(CPPFLAGS) frprmn.f > _frprmn.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _frprmn.f
+
+frprmn_test.o: frprmn_test.f
+	$(CPP) $(CPPFLAGS) frprmn_test.f > _frprmn_test.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _frprmn_test.f
+
+gammq.o: gammq.f
+	$(CPP) $(CPPFLAGS) gammq.f > _gammq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _gammq.f
+
+gauss.o: gauss.f
+	$(CPP) $(CPPFLAGS) gauss.f > _gauss.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _gauss.f
+
+gdsum.o: \
+                    multibead.o
+
+gdsum.o: gdsum.f
+	$(CPP) $(CPPFLAGS) gdsum.f > _gdsum.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _gdsum.f
+
+geopt.o: geopt.f
+	$(CPP) $(CPPFLAGS) geopt.f > _geopt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _geopt.f
+
+geopt_pt.o: geopt_pt.f
+	$(CPP) $(CPPFLAGS) geopt_pt.f > _geopt_pt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _geopt_pt.f
+
+getrec.o: getrec.f
+	$(CPP) $(CPPFLAGS) getrec.f > _getrec.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _getrec.f
+
+gimax.o: \
+                    multibead.o
+
+gimax.o: gimax.f
+	$(CPP) $(CPPFLAGS) gimax.f > _gimax.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _gimax.f
+
+gisum.o: \
+                    multibead.o
+
+gisum.o: gisum.f
+	$(CPP) $(CPPFLAGS) gisum.f > _gisum.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _gisum.f
+
+gstate.o: gstate.f
+	$(CPP) $(CPPFLAGS) gstate.f > _gstate.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _gstate.f
+
+gsync.o: \
+                    multibead.o
+
+gsync.o: gsync.f
+	$(CPP) $(CPPFLAGS) gsync.f > _gsync.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _gsync.f
+
+hatch.o: hatch.f
+	$(CPP) $(CPPFLAGS) hatch.f > _hatch.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _hatch.f
+
+hkewald1.o: hkewald1.f
+	$(CPP) $(CPPFLAGS) hkewald1.f > _hkewald1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _hkewald1.f
+
+hkewald2.o: hkewald2.f
+	$(CPP) $(CPPFLAGS) hkewald2.f > _hkewald2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _hkewald2.f
+
+hkewald3.o: hkewald3.f
+	$(CPP) $(CPPFLAGS) hkewald3.f > _hkewald3.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _hkewald3.f
+
+hkewald4.o: hkewald4.f
+	$(CPP) $(CPPFLAGS) hkewald4.f > _hkewald4.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _hkewald4.f
+
+hkgen.o: hkgen.f
+	$(CPP) $(CPPFLAGS) hkgen.f > _hkgen.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _hkgen.f
+
+images.o: images.f
+	$(CPP) $(CPPFLAGS) images.f > _images.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _images.f
+
+initcomms.o: initcomms.f
+	$(CPP) $(CPPFLAGS) initcomms.f > _initcomms.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _initcomms.f
+
+intlist.o: intlist.f
+	$(CPP) $(CPPFLAGS) intlist.f > _intlist.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _intlist.f
+
+intstr.o: intstr.f
+	$(CPP) $(CPPFLAGS) intstr.f > _intstr.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _intstr.f
+
+invert.o: invert.f
+	$(CPP) $(CPPFLAGS) invert.f > _invert.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _invert.f
+
+invfrc.o: invfrc.f
+	$(CPP) $(CPPFLAGS) invfrc.f > _invfrc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _invfrc.f
+
+iter.o: iter.f
+	$(CPP) $(CPPFLAGS) iter.f > _iter.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _iter.f
+
+jacobi.o: jacobi.f
+	$(CPP) $(CPPFLAGS) jacobi.f > _jacobi.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _jacobi.f
+
+kinstr.o: kinstr.f
+	$(CPP) $(CPPFLAGS) kinstr.f > _kinstr.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _kinstr.f
+
+lbfgs.o: lbfgs.f
+	$(CPP) $(CPPFLAGS) lbfgs.f > _lbfgs.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _lbfgs.f
+
+lowcase.o: lowcase.f
+	$(CPP) $(CPPFLAGS) lowcase.f > _lowcase.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _lowcase.f
+
+lrcmetal.o: lrcmetal.f
+	$(CPP) $(CPPFLAGS) lrcmetal.f > _lrcmetal.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _lrcmetal.f
+
+lrcorrect.o: \
+                    heatcurrent.o\
+                    dl_params.inc
+
+lrcorrect.o: lrcorrect.f
+	$(CPP) $(CPPFLAGS) lrcorrect.f > _lrcorrect.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _lrcorrect.f
+
+merge.o: \
+                    multibead.o
+
+merge.o: merge.f
+	$(CPP) $(CPPFLAGS) merge.f > _merge.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _merge.f
+
+merge.hcube.o: \
+                    multibead.o
+
+merge.hcube.o: merge.hcube.f
+	$(CPP) $(CPPFLAGS) merge.hcube.f > _merge.hcube.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _merge.hcube.f
+
+merge.systol.o: \
+                    multibead.o
+
+merge.systol.o: merge.systol.f
+	$(CPP) $(CPPFLAGS) merge.systol.f > _merge.systol.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _merge.systol.f
+
+merge1.o: \
+                    multibead.o
+
+merge1.o: merge1.f
+	$(CPP) $(CPPFLAGS) merge1.f > _merge1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _merge1.f
+
+merge1.hcube.o: \
+                    multibead.o
+
+merge1.hcube.o: merge1.hcube.f
+	$(CPP) $(CPPFLAGS) merge1.hcube.f > _merge1.hcube.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _merge1.hcube.f
+
+merge1.systol.o: \
+                    multibead.o
+
+merge1.systol.o: merge1.systol.f
+	$(CPP) $(CPPFLAGS) merge1.systol.f > _merge1.systol.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _merge1.systol.f
+
+merge4.o: \
+                    multibead.o
+
+merge4.o: merge4.f
+	$(CPP) $(CPPFLAGS) merge4.f > _merge4.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _merge4.f
+
+merge4.hcube.o: \
+                    multibead.o
+
+merge4.hcube.o: merge4.hcube.f
+	$(CPP) $(CPPFLAGS) merge4.hcube.f > _merge4.hcube.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _merge4.hcube.f
+
+metgen.o: metgen.f
+	$(CPP) $(CPPFLAGS) metgen.f > _metgen.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _metgen.f
+
+metgen_rsq.o: metgen_rsq.f
+	$(CPP) $(CPPFLAGS) metgen_rsq.f > _metgen_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _metgen_rsq.f
+
+multiple.o: multiple.f
+	$(CPP) $(CPPFLAGS) multiple.f > _multiple.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _multiple.f
+
+multiple_nsq.o: multiple_nsq.f
+	$(CPP) $(CPPFLAGS) multiple_nsq.f > _multiple_nsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _multiple_nsq.f
+
+multipleneu.o: multipleneu.f
+	$(CPP) $(CPPFLAGS) multipleneu.f > _multipleneu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _multipleneu.f
+
+neutlst.o: neutlst.f
+	$(CPP) $(CPPFLAGS) neutlst.f > _neutlst.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _neutlst.f
+
+nodedim.o: \
+                    multibead.o
+
+nodedim.o: nodedim.f
+	$(CPP) $(CPPFLAGS) nodedim.f > _nodedim.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nodedim.f
+
+npt_b0.o: npt_b0.f
+	$(CPP) $(CPPFLAGS) npt_b0.f > _npt_b0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _npt_b0.f
+
+npt_b1.o: npt_b1.f
+	$(CPP) $(CPPFLAGS) npt_b1.f > _npt_b1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _npt_b1.f
+
+npt_b3.o: npt_b3.f
+	$(CPP) $(CPPFLAGS) npt_b3.f > _npt_b3.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _npt_b3.f
+
+npt_h0.o: npt_h0.f
+	$(CPP) $(CPPFLAGS) npt_h0.f > _npt_h0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _npt_h0.f
+
+npt_h1.o: npt_h1.f
+	$(CPP) $(CPPFLAGS) npt_h1.f > _npt_h1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _npt_h1.f
+
+npt_h3.o: npt_h3.f
+	$(CPP) $(CPPFLAGS) npt_h3.f > _npt_h3.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _npt_h3.f
+
+nptq_b1.o: nptq_b1.f
+	$(CPP) $(CPPFLAGS) nptq_b1.f > _nptq_b1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nptq_b1.f
+
+nptq_b2.o: nptq_b2.f
+	$(CPP) $(CPPFLAGS) nptq_b2.f > _nptq_b2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nptq_b2.f
+
+nptq_b3.o: nptq_b3.f
+	$(CPP) $(CPPFLAGS) nptq_b3.f > _nptq_b3.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nptq_b3.f
+
+nptq_b4.o: nptq_b4.f
+	$(CPP) $(CPPFLAGS) nptq_b4.f > _nptq_b4.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nptq_b4.f
+
+nptq_h1.o: nptq_h1.f
+	$(CPP) $(CPPFLAGS) nptq_h1.f > _nptq_h1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nptq_h1.f
+
+nptq_h2.o: nptq_h2.f
+	$(CPP) $(CPPFLAGS) nptq_h2.f > _nptq_h2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nptq_h2.f
+
+nptq_h3.o: nptq_h3.f
+	$(CPP) $(CPPFLAGS) nptq_h3.f > _nptq_h3.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nptq_h3.f
+
+nptq_h4.o: nptq_h4.f
+	$(CPP) $(CPPFLAGS) nptq_h4.f > _nptq_h4.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nptq_h4.f
+
+nst_b0.o: nst_b0.f
+	$(CPP) $(CPPFLAGS) nst_b0.f > _nst_b0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nst_b0.f
+
+nst_b1.o: nst_b1.f
+	$(CPP) $(CPPFLAGS) nst_b1.f > _nst_b1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nst_b1.f
+
+nst_h0.o: nst_h0.f
+	$(CPP) $(CPPFLAGS) nst_h0.f > _nst_h0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nst_h0.f
+
+nst_h1.o: nst_h1.f
+	$(CPP) $(CPPFLAGS) nst_h1.f > _nst_h1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nst_h1.f
+
+nstq_b1.o: nstq_b1.f
+	$(CPP) $(CPPFLAGS) nstq_b1.f > _nstq_b1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nstq_b1.f
+
+nstq_b2.o: nstq_b2.f
+	$(CPP) $(CPPFLAGS) nstq_b2.f > _nstq_b2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nstq_b2.f
+
+nstq_h1.o: nstq_h1.f
+	$(CPP) $(CPPFLAGS) nstq_h1.f > _nstq_h1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nstq_h1.f
+
+nstq_h2.o: nstq_h2.f
+	$(CPP) $(CPPFLAGS) nstq_h2.f > _nstq_h2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nstq_h2.f
+
+nve_0.o: nve_0.f
+	$(CPP) $(CPPFLAGS) nve_0.f > _nve_0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nve_0.f
+
+nve_1.o: \
+                    module.o
+
+nve_1.o: nve_1.f
+	$(CPP) $(CPPFLAGS) nve_1.f > _nve_1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nve_1.f
+
+nveq_1.o: nveq_1.f
+	$(CPP) $(CPPFLAGS) nveq_1.f > _nveq_1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nveq_1.f
+
+nveq_2.o: nveq_2.f
+	$(CPP) $(CPPFLAGS) nveq_2.f > _nveq_2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nveq_2.f
+
+nvt_b0.o: nvt_b0.f
+	$(CPP) $(CPPFLAGS) nvt_b0.f > _nvt_b0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nvt_b0.f
+
+nvt_b1.o: nvt_b1.f
+	$(CPP) $(CPPFLAGS) nvt_b1.f > _nvt_b1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nvt_b1.f
+
+nvt_e0.o: nvt_e0.f
+	$(CPP) $(CPPFLAGS) nvt_e0.f > _nvt_e0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nvt_e0.f
+
+nvt_e1.o: nvt_e1.f
+	$(CPP) $(CPPFLAGS) nvt_e1.f > _nvt_e1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nvt_e1.f
+
+nvt_h0.o: nvt_h0.f
+	$(CPP) $(CPPFLAGS) nvt_h0.f > _nvt_h0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nvt_h0.f
+
+nvt_h1.o: \
+                    module.o
+
+nvt_h1.o: nvt_h1.f
+	$(CPP) $(CPPFLAGS) nvt_h1.f > _nvt_h1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nvt_h1.f
+
+nvtq_b1.o: nvtq_b1.f
+	$(CPP) $(CPPFLAGS) nvtq_b1.f > _nvtq_b1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nvtq_b1.f
+
+nvtq_b2.o: nvtq_b2.f
+	$(CPP) $(CPPFLAGS) nvtq_b2.f > _nvtq_b2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nvtq_b2.f
+
+nvtq_h1.o: nvtq_h1.f
+	$(CPP) $(CPPFLAGS) nvtq_h1.f > _nvtq_h1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nvtq_h1.f
+
+nvtq_h2.o: nvtq_h2.f
+	$(CPP) $(CPPFLAGS) nvtq_h2.f > _nvtq_h2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _nvtq_h2.f
+
+parlink.o: parlink.f
+	$(CPP) $(CPPFLAGS) parlink.f > _parlink.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _parlink.f
+
+parlinkneu.o: parlinkneu.f
+	$(CPP) $(CPPFLAGS) parlinkneu.f > _parlinkneu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _parlinkneu.f
+
+parlst.o: parlst.f
+	$(CPP) $(CPPFLAGS) parlst.f > _parlst.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _parlst.f
+
+parlst_nsq.o: parlst_nsq.f
+	$(CPP) $(CPPFLAGS) parlst_nsq.f > _parlst_nsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _parlst_nsq.f
+
+parneulst.o: parneulst.f
+	$(CPP) $(CPPFLAGS) parneulst.f > _parneulst.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _parneulst.f
+
+parset.o: parset.f
+	$(CPP) $(CPPFLAGS) parset.f > _parset.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _parset.f
+
+passcon.o: \
+                    multibead.o
+
+passcon.o: passcon.f
+	$(CPP) $(CPPFLAGS) passcon.f > _passcon.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _passcon.f
+
+passpmf.o: passpmf.f
+	$(CPP) $(CPPFLAGS) passpmf.f > _passpmf.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _passpmf.f
+
+passquat.o: passquat.f
+	$(CPP) $(CPPFLAGS) passquat.f > _passquat.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _passquat.f
+
+pdsum.o: \
+                    multibead.o
+
+pdsum.o: pdsum.f
+	$(CPP) $(CPPFLAGS) pdsum.f > _pdsum.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _pdsum.f
+
+pmf_1.o: pmf_1.f
+	$(CPP) $(CPPFLAGS) pmf_1.f > _pmf_1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _pmf_1.f
+
+pmf_shake.o: pmf_shake.f
+	$(CPP) $(CPPFLAGS) pmf_shake.f > _pmf_shake.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _pmf_shake.f
+
+primlst.o: primlst.f
+	$(CPP) $(CPPFLAGS) primlst.f > _primlst.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _primlst.f
+
+prneulst.o: prneulst.f
+	$(CPP) $(CPPFLAGS) prneulst.f > _prneulst.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _prneulst.f
+
+qshake.o: qshake.f
+	$(CPP) $(CPPFLAGS) qshake.f > _qshake.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _qshake.f
+
+quatbook.o: quatbook.f
+	$(CPP) $(CPPFLAGS) quatbook.f > _quatbook.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _quatbook.f
+
+quatqnch.o: quatqnch.f
+	$(CPP) $(CPPFLAGS) quatqnch.f > _quatqnch.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _quatqnch.f
+
+quench.o: quench.f
+	$(CPP) $(CPPFLAGS) quench.f > _quench.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _quench.f
+
+ran2.o: ran2.f
+	$(CPP) $(CPPFLAGS) ran2.f > _ran2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ran2.f
+
+rdf0.o: rdf0.f
+	$(CPP) $(CPPFLAGS) rdf0.f > _rdf0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _rdf0.f
+
+rdf0neu.o: rdf0neu.f
+	$(CPP) $(CPPFLAGS) rdf0neu.f > _rdf0neu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _rdf0neu.f
+
+rdf1.o: rdf1.f
+	$(CPP) $(CPPFLAGS) rdf1.f > _rdf1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _rdf1.f
+
+rdshake_1.o: rdshake_1.f
+	$(CPP) $(CPPFLAGS) rdshake_1.f > _rdshake_1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _rdshake_1.f
+
+readrec.o: readrec.f
+	$(CPP) $(CPPFLAGS) readrec.f > _readrec.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _readrec.f
+
+result.o: result.f
+	$(CPP) $(CPPFLAGS) result.f > _result.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _result.f
+
+revive.o: \
+                    multibead.o
+
+revive.o: revive.f
+	$(CPP) $(CPPFLAGS) revive.f > _revive.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _revive.f
+
+rfield.o: rfield.f
+	$(CPP) $(CPPFLAGS) rfield.f > _rfield.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _rfield.f
+
+scdens.o: scdens.f
+	$(CPP) $(CPPFLAGS) scdens.f > _scdens.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _scdens.f
+
+scl_csum.o: scl_csum.f
+	$(CPP) $(CPPFLAGS) scl_csum.f > _scl_csum.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _scl_csum.f
+
+set_block.o: set_block.f
+	$(CPP) $(CPPFLAGS) set_block.f > _set_block.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _set_block.f
+
+shellsort.o: shellsort.f
+	$(CPP) $(CPPFLAGS) shellsort.f > _shellsort.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _shellsort.f
+
+shlfrc.o: shlfrc.f
+	$(CPP) $(CPPFLAGS) shlfrc.f > _shlfrc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _shlfrc.f
+
+shlmerge.o: \
+                    multibead.o
+
+shlmerge.o: shlmerge.f
+	$(CPP) $(CPPFLAGS) shlmerge.f > _shlmerge.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _shlmerge.f
+
+shlqnch.o: shlqnch.f
+	$(CPP) $(CPPFLAGS) shlqnch.f > _shlqnch.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _shlqnch.f
+
+shmove.o: \
+                    multibead.o
+
+shmove.o: shmove.f
+	$(CPP) $(CPPFLAGS) shmove.f > _shmove.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _shmove.f
+
+simdef.o: \
+                    multibead.o\
+                    module.o
+
+simdef.o: simdef.f
+	$(CPP) $(CPPFLAGS) simdef.f > _simdef.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _simdef.f
+
+simdef_cmd.o: \
+                    multibead.o\
+                    module.o
+
+simdef_cmd.o: simdef_cmd.f
+	$(CPP) $(CPPFLAGS) simdef_cmd.f > _simdef_cmd.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _simdef_cmd.f
+
+spl_cexp.o: spl_cexp.f
+	$(CPP) $(CPPFLAGS) spl_cexp.f > _spl_cexp.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _spl_cexp.f
+
+splice.o: splice.f
+	$(CPP) $(CPPFLAGS) splice.f > _splice.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _splice.f
+
+spme_for.o: spme_for.f
+	$(CPP) $(CPPFLAGS) spme_for.f > _spme_for.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _spme_for.f
+
+srfrce.o: \
+                    heatcurrent.o
+
+srfrce.o: srfrce.f
+	$(CPP) $(CPPFLAGS) srfrce.f > _srfrce.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _srfrce.f
+
+srfrce2.o: \
+                    module.o\
+                    heatcurrent.o
+
+srfrce2.o: srfrce2.f
+	$(CPP) $(CPPFLAGS) srfrce2.f > _srfrce2.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _srfrce2.f
+
+srfrce_4pt.o: srfrce_4pt.f
+	$(CPP) $(CPPFLAGS) srfrce_4pt.f > _srfrce_4pt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _srfrce_4pt.f
+
+srfrce_rsq.o: srfrce_rsq.f
+	$(CPP) $(CPPFLAGS) srfrce_rsq.f > _srfrce_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _srfrce_rsq.f
+
+srfrceneu.o: srfrceneu.f
+	$(CPP) $(CPPFLAGS) srfrceneu.f > _srfrceneu.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _srfrceneu.f
+
+srfrceneu_4pt.o: srfrceneu_4pt.f
+	$(CPP) $(CPPFLAGS) srfrceneu_4pt.f > _srfrceneu_4pt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _srfrceneu_4pt.f
+
+srfrceneu_rsq.o: srfrceneu_rsq.f
+	$(CPP) $(CPPFLAGS) srfrceneu_rsq.f > _srfrceneu_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _srfrceneu_rsq.f
+
+static.o: \
+                    multibead.o
+
+static.o: static.f
+	$(CPP) $(CPPFLAGS) static.f > _static.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _static.f
+
+strip.o: strip.f
+	$(CPP) $(CPPFLAGS) strip.f > _strip.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _strip.f
+
+strucopt.o: strucopt.f
+	$(CPP) $(CPPFLAGS) strucopt.f > _strucopt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _strucopt.f
+
+suttchen.o: suttchen.f
+	$(CPP) $(CPPFLAGS) suttchen.f > _suttchen.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _suttchen.f
+
+suttchen_4pt.o: suttchen_4pt.f
+	$(CPP) $(CPPFLAGS) suttchen_4pt.f > _suttchen_4pt.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _suttchen_4pt.f
+
+suttchen_rsq.o: suttchen_rsq.f
+	$(CPP) $(CPPFLAGS) suttchen_rsq.f > _suttchen_rsq.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _suttchen_rsq.f
+
+syminv.o: syminv.f
+	$(CPP) $(CPPFLAGS) syminv.f > _syminv.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _syminv.f
+
+sysbook.o: \
+                    module.o
+
+sysbook.o: sysbook.f
+	$(CPP) $(CPPFLAGS) sysbook.f > _sysbook.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _sysbook.f
+
+sysdef.o: \
+                    module.o
+
+sysdef.o: sysdef.f
+	$(CPP) $(CPPFLAGS) sysdef.f > _sysdef.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _sysdef.f
+
+sysdef_cmd.o: \
+                    module.o
+
+sysdef_cmd.o: sysdef_cmd.f
+	$(CPP) $(CPPFLAGS) sysdef_cmd.f > _sysdef_cmd.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _sysdef_cmd.f
+
+sysgen.o: \
+                    multibead.o
+
+sysgen.o: sysgen.f
+	$(CPP) $(CPPFLAGS) sysgen.f > _sysgen.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _sysgen.f
+
+sysgen_cmd.o: \
+                    multibead.o
+
+sysgen_cmd.o: sysgen_cmd.f
+	$(CPP) $(CPPFLAGS) sysgen_cmd.f > _sysgen_cmd.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _sysgen_cmd.f
+
+sysinit.o: sysinit.f
+	$(CPP) $(CPPFLAGS) sysinit.f > _sysinit.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _sysinit.f
+
+systemp.o: systemp.f
+	$(CPP) $(CPPFLAGS) systemp.f > _systemp.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _systemp.f
+
+systemp_cmd.o: systemp_cmd.f
+	$(CPP) $(CPPFLAGS) systemp_cmd.f > _systemp_cmd.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _systemp_cmd.f
+
+tethfrc.o: tethfrc.f
+	$(CPP) $(CPPFLAGS) tethfrc.f > _tethfrc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _tethfrc.f
+
+thbfrc.o: thbfrc.f
+	$(CPP) $(CPPFLAGS) thbfrc.f > _thbfrc.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _thbfrc.f
+
+thole.o: thole.f
+	$(CPP) $(CPPFLAGS) thole.f > _thole.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _thole.f
+
+timchk.o: \
+                    multibead.o
+
+timchk.o: timchk.f
+	$(CPP) $(CPPFLAGS) timchk.f > _timchk.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _timchk.f
+
+traject.o: \
+                    multibead.o
+
+traject.o: traject.f
+	$(CPP) $(CPPFLAGS) traject.f > _traject.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _traject.f
+
+traject_u.o: traject_u.f
+	$(CPP) $(CPPFLAGS) traject_u.f > _traject_u.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _traject_u.f
+
+ttm2list.o: ttm2list.f
+	$(CPP) $(CPPFLAGS) ttm2list.f > _ttm2list.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _ttm2list.f
+
+vertest.o: vertest.f
+	$(CPP) $(CPPFLAGS) vertest.f > _vertest.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _vertest.f
+
+vertest1.o: vertest1.f
+	$(CPP) $(CPPFLAGS) vertest1.f > _vertest1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _vertest1.f
+
+vscale.o: vscale.f
+	$(CPP) $(CPPFLAGS) vscale.f > _vscale.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _vscale.f
+
+vscaleg.o: vscaleg.f
+	$(CPP) $(CPPFLAGS) vscaleg.f > _vscaleg.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _vscaleg.f
+
+VT.o: VT.f
+	$(CPP) $(CPPFLAGS) VT.f > _VT.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _VT.f
+
+warning.o: warning.f
+	$(CPP) $(CPPFLAGS) warning.f > _warning.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _warning.f
+
+xfrprmn.o: xfrprmn.f
+	$(CPP) $(CPPFLAGS) xfrprmn.f > _xfrprmn.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _xfrprmn.f
+
+xscale.o: xscale.f
+	$(CPP) $(CPPFLAGS) xscale.f > _xscale.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _xscale.f
+
+zden0.o: zden0.f
+	$(CPP) $(CPPFLAGS) zden0.f > _zden0.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _zden0.f
+
+zden1.o: zden1.f
+	$(CPP) $(CPPFLAGS) zden1.f > _zden1.f
+	$(F77) -c $(F77FLAGS) $(DEBUG) -o $@ _zden1.f
+
+aspc.o: \
+                    module.o
+
+aspc.o: aspc.f90
+	$(CPP) $(CPPFLAGS) aspc.f90 > _aspc.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _aspc.f90
+
+centroid_2D_IR.o: \
+                    multibead.o\
+                    module.o
+
+centroid_2D_IR.o: centroid_2D_IR.f90
+	$(CPP) $(CPPFLAGS) centroid_2D_IR.f90 > _centroid_2D_IR.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _centroid_2D_IR.f90
+
+centroid_dcp.o: \
+                    multibead.o
+
+centroid_dcp.o: centroid_dcp.f90
+	$(CPP) $(CPPFLAGS) centroid_dcp.f90 > _centroid_dcp.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _centroid_dcp.f90
+
+centroid_make_cavity.o: \
+                    multibead.o
+
+centroid_make_cavity.o: centroid_make_cavity.f90
+	$(CPP) $(CPPFLAGS) centroid_make_cavity.f90 > _centroid_make_cavity.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _centroid_make_cavity.f90
+
+centroid_module.o: \
+                    nose_hoover_module.o
+
+centroid_module.o: centroid_module.f90
+	$(CPP) $(CPPFLAGS) centroid_module.f90 > _centroid_module.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _centroid_module.f90
+
+centroid_recalc_dip.o: \
+                    multibead.o
+
+centroid_recalc_dip.o: centroid_recalc_dip.f90
+	$(CPP) $(CPPFLAGS) centroid_recalc_dip.f90 > _centroid_recalc_dip.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _centroid_recalc_dip.f90
+
+checkcom.o: \
+                    module.o
+
+checkcom.o: checkcom.f90
+	$(CPP) $(CPPFLAGS) checkcom.f90 > _checkcom.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _checkcom.f90
+
+cv.o: \
+                    multibead.o
+
+cv.o: cv.f90
+	$(CPP) $(CPPFLAGS) cv.f90 > _cv.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _cv.f90
+
+firstlast_field.o: firstlast_field.f90
+	$(CPP) $(CPPFLAGS) firstlast_field.f90 > _firstlast_field.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _firstlast_field.f90
+
+fordebug.o: \
+                    module.o
+
+fordebug.o: fordebug.f90
+	$(CPP) $(CPPFLAGS) fordebug.f90 > _fordebug.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _fordebug.f90
+
+fsockets.o: \
+                    .o
+
+fsockets.o: fsockets.f90
+	$(CPP) $(CPPFLAGS) fsockets.f90 > _fsockets.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _fsockets.f90
+
+heat_check.o: \
+                    heatcurrent.o
+
+heat_check.o: heat_check.f90
+	$(CPP) $(CPPFLAGS) heat_check.f90 > _heat_check.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _heat_check.f90
+
+heatcurrent.o: \
+                    module.o\
+                    multibead.o
+
+heatcurrent.o: heatcurrent.f90
+	$(CPP) $(CPPFLAGS) heatcurrent.f90 > _heatcurrent.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _heatcurrent.f90
+
+induced_error.o: \
+                    multibead.o
+
+induced_error.o: induced_error.f90
+	$(CPP) $(CPPFLAGS) induced_error.f90 > _induced_error.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _induced_error.f90
+
+ipi.o: \
+                    .o
+
+ipi.o: ipi.f90
+	$(CPP) $(CPPFLAGS) ipi.f90 > _ipi.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _ipi.f90
+
+langevin.o: \
+                    multibead.o
+
+langevin.o: langevin.f90
+	$(CPP) $(CPPFLAGS) langevin.f90 > _langevin.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _langevin.f90
+
+mbnrg.o: \
+                    multibead.o
+
+mbnrg.o: mbnrg.f90
+	$(CPP) $(CPPFLAGS) mbnrg.f90 > _mbnrg.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _mbnrg.f90
+
+mbpol-utils.o: mbpol-utils.f90
+	$(CPP) $(CPPFLAGS) mbpol-utils.f90 > _mbpol-utils.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _mbpol-utils.f90
+
+mbpol.o: \
+                    heatcurrent.o\
+                    multibead.o
+
+mbpol.o: mbpol.f90
+	$(CPP) $(CPPFLAGS) mbpol.f90 > _mbpol.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _mbpol.f90
+
+module.o: module.f90
+	$(CPP) $(CPPFLAGS) module.f90 > _module.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _module.f90
+
+multibead.o: multibead.f90
+	$(CPP) $(CPPFLAGS) multibead.f90 > _multibead.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _multibead.f90
+
+nose_hoover_module.o: nose_hoover_module.f90
+	$(CPP) $(CPPFLAGS) nose_hoover_module.f90 > _nose_hoover_module.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _nose_hoover_module.f90
+
+optimization.o: \
+                    module.o
+
+optimization.o: optimization.f90
+	$(CPP) $(CPPFLAGS) optimization.f90 > _optimization.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _optimization.f90
+
+optimization_module.o: optimization_module.f90
+	$(CPP) $(CPPFLAGS) optimization_module.f90 > _optimization_module.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _optimization_module.f90
+
+output_ttm2_com.o: \
+                    multibead.o\
+                    module.o
+
+output_ttm2_com.o: output_ttm2_com.f90
+	$(CPP) $(CPPFLAGS) output_ttm2_com.f90 > _output_ttm2_com.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _output_ttm2_com.f90
+
+output_ttm2_dip.o: \
+                    multibead.o\
+                    module.o
+
+output_ttm2_dip.o: output_ttm2_dip.f90
+	$(CPP) $(CPPFLAGS) output_ttm2_dip.f90 > _output_ttm2_dip.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _output_ttm2_dip.f90
+
+output_ttm2_force.o: \
+                    module.o
+
+output_ttm2_force.o: output_ttm2_force.f90
+	$(CPP) $(CPPFLAGS) output_ttm2_force.f90 > _output_ttm2_force.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _output_ttm2_force.f90
+
+ps_type_couple.o: \
+                    module.o
+
+ps_type_couple.o: ps_type_couple.f90
+	$(CPP) $(CPPFLAGS) ps_type_couple.f90 > _ps_type_couple.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _ps_type_couple.f90
+
+qdetermine.o: \
+                    module.o
+
+qdetermine.o: qdetermine.f90
+	$(CPP) $(CPPFLAGS) qdetermine.f90 > _qdetermine.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _qdetermine.f90
+
+qdforce.o: \
+                    module.o\
+                    multibead.o\
+                    heatcurrent.o
+
+qdforce.o: qdforce.f90
+	$(CPP) $(CPPFLAGS) qdforce.f90 > _qdforce.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _qdforce.f90
+
+set_guess_dipole.o: \
+                    module.o
+
+set_guess_dipole.o: set_guess_dipole.f90
+	$(CPP) $(CPPFLAGS) set_guess_dipole.f90 > _set_guess_dipole.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _set_guess_dipole.f90
+
+tang-toennies.o: tang-toennies.f90
+	$(CPP) $(CPPFLAGS) tang-toennies.f90 > _tang-toennies.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _tang-toennies.f90
+
+vibrational_module.o: vibrational_module.f90
+	$(CPP) $(CPPFLAGS) vibrational_module.f90 > _vibrational_module.f90
+	$(F90) -c $(F90FLAGS) $(DEBUG) -o $@ _vibrational_module.f90
+

@@ -39,7 +39,8 @@ c
 #endif /* TTM_FORCE_DECOMPOSITION */
 
 #ifdef HEAT_CURRENT
-      use heatcurrent, only: update_stress_ang, update_energy_ang
+      use heatcurrent, only: update_stress_ang, update_energy_ang,
+     x                       update_forces
 #endif
 
 #include "dl_params.inc"
@@ -61,6 +62,7 @@ c
 #ifdef HEAT_CURRENT
       real(8), parameter :: third=1.0d0/3.0d0
       real(8), parameter :: half=1.0d0/2.0d0
+      real(8) :: force_tmp(3)
 #endif
 
 
@@ -414,6 +416,16 @@ c     calculate atomic forces
         fxx(ic)=fxx(ic)+fxc
         fyy(ic)=fyy(ic)+fyc
         fzz(ic)=fzz(ic)+fzc
+
+#ifdef HEAT_CURRENT
+        ! PP_: Force ON ia DUE TO ib
+        force_tmp = (/ fxa, fya, fza /)
+        call update_forces(ia,ib,force_tmp)
+        call update_forces(ib,ia,-force_tmp)
+        force_tmp = (/ fxc, fyc, fzc /)
+        call update_forces(ic,ib,force_tmp)
+        call update_forces(ib,ic,-force_tmp)
+#endif /*HEAT_CURRENT*/
 !
 !     for force decompositions
 
@@ -452,33 +464,35 @@ c     calculate stress tensor
 #endif
 
 #ifdef HEAT_CURRENT
-        call update_stress_ang(ia,1,1,half*(rab*xab*fxa))
-        call update_stress_ang(ia,1,2,half*(rab*xab*fya))
-        call update_stress_ang(ia,1,3,half*(rab*xab*fza))
-        call update_stress_ang(ia,2,1,half*(rab*yab*fxa))
-        call update_stress_ang(ia,2,2,half*(rab*yab*fya))
-        call update_stress_ang(ia,2,3,half*(rab*yab*fza))
-        call update_stress_ang(ia,3,1,half*(rab*zab*fxa))
-        call update_stress_ang(ia,3,2,half*(rab*zab*fya))
-        call update_stress_ang(ia,3,3,half*(rab*zab*fza))
-        call update_stress_ang(ib,1,1,half*(rab*xab*fxa+rbc*xbc*fxc))
-        call update_stress_ang(ib,1,2,half*(rab*xab*fya+rbc*xbc*fyc))
-        call update_stress_ang(ib,1,3,half*(rab*xab*fza+rbc*xbc*fzc))
-        call update_stress_ang(ib,2,1,half*(rab*yab*fxa+rbc*ybc*fxc))
-        call update_stress_ang(ib,2,2,half*(rab*yab*fya+rbc*ybc*fyc))
-        call update_stress_ang(ib,2,3,half*(rab*yab*fza+rbc*ybc*fzc))
-        call update_stress_ang(ib,3,1,half*(rab*zab*fxa+rbc*zbc*fxc))
-        call update_stress_ang(ib,3,2,half*(rab*zab*fya+rbc*zbc*fyc))
-        call update_stress_ang(ib,3,3,half*(rab*zab*fza+rbc*zbc*fzc))
-        call update_stress_ang(ic,1,1,half*(rbc*xbc*fxc))
-        call update_stress_ang(ic,1,2,half*(rbc*xbc*fyc))
-        call update_stress_ang(ic,1,3,half*(rbc*xbc*fzc))
-        call update_stress_ang(ic,2,1,half*(rbc*ybc*fxc))
-        call update_stress_ang(ic,2,2,half*(rbc*ybc*fyc))
-        call update_stress_ang(ic,2,3,half*(rbc*ybc*fzc))
-        call update_stress_ang(ic,3,1,half*(rbc*zbc*fxc))
-        call update_stress_ang(ic,3,2,half*(rbc*zbc*fyc))
-        call update_stress_ang(ic,3,3,half*(rbc*zbc*fzc))
+#ifdef HEAT_STRESS
+        call update_stress_ang(ia,1,1,-half*(rab*xab*fxa))
+        call update_stress_ang(ia,1,2,-half*(rab*xab*fya))
+        call update_stress_ang(ia,1,3,-half*(rab*xab*fza))
+        call update_stress_ang(ia,2,1,-half*(rab*yab*fxa))
+        call update_stress_ang(ia,2,2,-half*(rab*yab*fya))
+        call update_stress_ang(ia,2,3,-half*(rab*yab*fza))
+        call update_stress_ang(ia,3,1,-half*(rab*zab*fxa))
+        call update_stress_ang(ia,3,2,-half*(rab*zab*fya))
+        call update_stress_ang(ia,3,3,-half*(rab*zab*fza))
+        call update_stress_ang(ib,1,1,-half*(rab*xab*fxa+rbc*xbc*fxc))
+        call update_stress_ang(ib,1,2,-half*(rab*xab*fya+rbc*xbc*fyc))
+        call update_stress_ang(ib,1,3,-half*(rab*xab*fza+rbc*xbc*fzc))
+        call update_stress_ang(ib,2,1,-half*(rab*yab*fxa+rbc*ybc*fxc))
+        call update_stress_ang(ib,2,2,-half*(rab*yab*fya+rbc*ybc*fyc))
+        call update_stress_ang(ib,2,3,-half*(rab*yab*fza+rbc*ybc*fzc))
+        call update_stress_ang(ib,3,1,-half*(rab*zab*fxa+rbc*zbc*fxc))
+        call update_stress_ang(ib,3,2,-half*(rab*zab*fya+rbc*zbc*fyc))
+        call update_stress_ang(ib,3,3,-half*(rab*zab*fza+rbc*zbc*fzc))
+        call update_stress_ang(ic,1,1,-half*(rbc*xbc*fxc))
+        call update_stress_ang(ic,1,2,-half*(rbc*xbc*fyc))
+        call update_stress_ang(ic,1,3,-half*(rbc*xbc*fzc))
+        call update_stress_ang(ic,2,1,-half*(rbc*ybc*fxc))
+        call update_stress_ang(ic,2,2,-half*(rbc*ybc*fyc))
+        call update_stress_ang(ic,2,3,-half*(rbc*ybc*fzc))
+        call update_stress_ang(ic,3,1,-half*(rbc*zbc*fxc))
+        call update_stress_ang(ic,3,2,-half*(rbc*zbc*fyc))
+        call update_stress_ang(ic,3,3,-half*(rbc*zbc*fzc))
+#endif /*HEAT_STRESS*/
 #endif
 
       enddo

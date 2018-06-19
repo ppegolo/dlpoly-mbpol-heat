@@ -18,7 +18,7 @@ subroutine qdforce( listttm2, n_water, nttm2, natms, imcon, cell,&
                              dp1dr1, dp1dr2, dp2dr1, dp2dr2, dp1dcos, dp2dcos
   use multibead, only: bead_rank, bead_size
 #ifdef HEAT_CURRENT
-  use heatcurrent, only: update_stress_qd
+  use heatcurrent, only: update_stress_qd, update_forces
 #endif
 
   implicit none
@@ -70,6 +70,8 @@ subroutine qdforce( listttm2, n_water, nttm2, natms, imcon, cell,&
   real(8) :: vtmp
 #ifdef HEAT_CURRENT
   real(8), parameter :: third=1.d0/3.d0
+  real(8) :: force_tmp(3)
+  integer :: idx
 #endif /* HEAT_CURRENT */
 
 !
@@ -327,6 +329,21 @@ subroutine qdforce( listttm2, n_water, nttm2, natms, imcon, cell,&
         fxx(mttm2) = fxx(mttm2) - dqdx(j,4,imol) * vtmp
         fyy(mttm2) = fyy(mttm2) - dqdy(j,4,imol) * vtmp
         fzz(mttm2) = fzz(mttm2) - dqdz(j,4,imol) * vtmp
+#ifdef HEAT_CURRENT
+        force_tmp=(/-dqdx(j,1,imol)*vtmp,-dqdy(j,1,imol)*vtmp,-dqdz(j,1,imol)*vtmp/)
+        if (j == 4) then
+          idx = n_water + imol
+        else
+          idx = 3*(imol-1) + j
+        end if
+        call update_forces(iox,idx,force_tmp)
+        force_tmp=(/-dqdx(j,2,imol)*vtmp,-dqdy(j,2,imol)*vtmp,-dqdz(j,2,imol)*vtmp/)
+        call update_forces(ih1,idx,force_tmp)
+        force_tmp=(/-dqdx(j,3,imol)*vtmp,-dqdy(j,3,imol)*vtmp,-dqdz(j,3,imol)*vtmp/)
+        call update_forces(ih2,idx,force_tmp)
+        force_tmp=(/-dqdx(j,4,imol)*vtmp,-dqdy(j,4,imol)*vtmp,-dqdz(j,4,imol)*vtmp/)
+        call update_forces(mttm2,idx,force_tmp)
+#endif /*HEAT_CURRENT*/
 
      end do
 
@@ -398,33 +415,35 @@ subroutine qdforce( listttm2, n_water, nttm2, natms, imcon, cell,&
               strs9 = strs9 - vtmp * dqdr_tmp * rz * rz / rjk
 
 #ifdef HEAT_CURRENT
-          call update_stress_qd(iox,1,1,-third*vtmp*dqdr_tmp*rx*rx/rjk)
-          call update_stress_qd(iox,1,2,-third*vtmp*dqdr_tmp*rx*ry/rjk)
-          call update_stress_qd(iox,1,3,-third*vtmp*dqdr_tmp*rx*rz/rjk)
-          call update_stress_qd(iox,2,1,-third*vtmp*dqdr_tmp*rx*ry/rjk)
-          call update_stress_qd(iox,2,2,-third*vtmp*dqdr_tmp*ry*ry/rjk)
-          call update_stress_qd(iox,2,3,-third*vtmp*dqdr_tmp*ry*rz/rjk)
-          call update_stress_qd(iox,3,1,-third*vtmp*dqdr_tmp*rx*rz/rjk)
-          call update_stress_qd(iox,3,2,-third*vtmp*dqdr_tmp*ry*rz/rjk)
-          call update_stress_qd(iox,3,3,-third*vtmp*dqdr_tmp*rz*rz/rjk)
-          call update_stress_qd(ih1,1,1,-third*vtmp*dqdr_tmp*rx*rx/rjk)
-          call update_stress_qd(ih1,1,2,-third*vtmp*dqdr_tmp*rx*ry/rjk)
-          call update_stress_qd(ih1,1,3,-third*vtmp*dqdr_tmp*rx*rz/rjk)
-          call update_stress_qd(ih1,2,1,-third*vtmp*dqdr_tmp*rx*ry/rjk)
-          call update_stress_qd(ih1,2,2,-third*vtmp*dqdr_tmp*ry*ry/rjk)
-          call update_stress_qd(ih1,2,3,-third*vtmp*dqdr_tmp*ry*rz/rjk)
-          call update_stress_qd(ih1,3,1,-third*vtmp*dqdr_tmp*rx*rz/rjk)
-          call update_stress_qd(ih1,3,2,-third*vtmp*dqdr_tmp*ry*rz/rjk)
-          call update_stress_qd(ih1,3,3,-third*vtmp*dqdr_tmp*rz*rz/rjk)
-          call update_stress_qd(ih2,1,1,-third*vtmp*dqdr_tmp*rx*rx/rjk)
-          call update_stress_qd(ih2,1,2,-third*vtmp*dqdr_tmp*rx*ry/rjk)
-          call update_stress_qd(ih2,1,3,-third*vtmp*dqdr_tmp*rx*rz/rjk)
-          call update_stress_qd(ih2,2,1,-third*vtmp*dqdr_tmp*rx*ry/rjk)
-          call update_stress_qd(ih2,2,2,-third*vtmp*dqdr_tmp*ry*ry/rjk)
-          call update_stress_qd(ih2,2,3,-third*vtmp*dqdr_tmp*ry*rz/rjk)
-          call update_stress_qd(ih2,3,1,-third*vtmp*dqdr_tmp*rx*rz/rjk)
-          call update_stress_qd(ih2,3,2,-third*vtmp*dqdr_tmp*ry*rz/rjk)
-          call update_stress_qd(ih2,3,3,-third*vtmp*dqdr_tmp*rz*rz/rjk)
+#ifdef HEAT_STRESS
+          call update_stress_qd(iox,1,1,third*vtmp*dqdr_tmp*rx*rx/rjk)
+          call update_stress_qd(iox,1,2,third*vtmp*dqdr_tmp*rx*ry/rjk)
+          call update_stress_qd(iox,1,3,third*vtmp*dqdr_tmp*rx*rz/rjk)
+          call update_stress_qd(iox,2,1,third*vtmp*dqdr_tmp*rx*ry/rjk)
+          call update_stress_qd(iox,2,2,third*vtmp*dqdr_tmp*ry*ry/rjk)
+          call update_stress_qd(iox,2,3,third*vtmp*dqdr_tmp*ry*rz/rjk)
+          call update_stress_qd(iox,3,1,third*vtmp*dqdr_tmp*rx*rz/rjk)
+          call update_stress_qd(iox,3,2,third*vtmp*dqdr_tmp*ry*rz/rjk)
+          call update_stress_qd(iox,3,3,third*vtmp*dqdr_tmp*rz*rz/rjk)
+          call update_stress_qd(ih1,1,1,third*vtmp*dqdr_tmp*rx*rx/rjk)
+          call update_stress_qd(ih1,1,2,third*vtmp*dqdr_tmp*rx*ry/rjk)
+          call update_stress_qd(ih1,1,3,third*vtmp*dqdr_tmp*rx*rz/rjk)
+          call update_stress_qd(ih1,2,1,third*vtmp*dqdr_tmp*rx*ry/rjk)
+          call update_stress_qd(ih1,2,2,third*vtmp*dqdr_tmp*ry*ry/rjk)
+          call update_stress_qd(ih1,2,3,third*vtmp*dqdr_tmp*ry*rz/rjk)
+          call update_stress_qd(ih1,3,1,third*vtmp*dqdr_tmp*rx*rz/rjk)
+          call update_stress_qd(ih1,3,2,third*vtmp*dqdr_tmp*ry*rz/rjk)
+          call update_stress_qd(ih1,3,3,third*vtmp*dqdr_tmp*rz*rz/rjk)
+          call update_stress_qd(ih2,1,1,third*vtmp*dqdr_tmp*rx*rx/rjk)
+          call update_stress_qd(ih2,1,2,third*vtmp*dqdr_tmp*rx*ry/rjk)
+          call update_stress_qd(ih2,1,3,third*vtmp*dqdr_tmp*rx*rz/rjk)
+          call update_stress_qd(ih2,2,1,third*vtmp*dqdr_tmp*rx*ry/rjk)
+          call update_stress_qd(ih2,2,2,third*vtmp*dqdr_tmp*ry*ry/rjk)
+          call update_stress_qd(ih2,2,3,third*vtmp*dqdr_tmp*ry*rz/rjk)
+          call update_stress_qd(ih2,3,1,third*vtmp*dqdr_tmp*rx*rz/rjk)
+          call update_stress_qd(ih2,3,2,third*vtmp*dqdr_tmp*ry*rz/rjk)
+          call update_stress_qd(ih2,3,3,third*vtmp*dqdr_tmp*rz*rz/rjk)
+#endif
 #endif /* HEAT_CURRENT */
 
               virqdf = virqdf + vtmp * rjk * dqdr_tmp
@@ -483,33 +502,33 @@ subroutine qdforce( listttm2, n_water, nttm2, natms, imcon, cell,&
         strs9 = strs9 - vtmp * dqdcos(i,imol) * dcostmp9
 
 #ifdef HEAT_CURRENT
-    call update_stress_qd(iox,1,1,-third*vtmp*dqdcos(i,imol)*dcostmp1)
-    call update_stress_qd(iox,1,2,-third*vtmp*dqdcos(i,imol)*dcostmp2)
-    call update_stress_qd(iox,1,3,-third*vtmp*dqdcos(i,imol)*dcostmp3)
-    call update_stress_qd(iox,2,1,-third*vtmp*dqdcos(i,imol)*dcostmp2)
-    call update_stress_qd(iox,2,2,-third*vtmp*dqdcos(i,imol)*dcostmp5)
-    call update_stress_qd(iox,2,3,-third*vtmp*dqdcos(i,imol)*dcostmp6)
-    call update_stress_qd(iox,3,1,-third*vtmp*dqdcos(i,imol)*dcostmp3)
-    call update_stress_qd(iox,3,2,-third*vtmp*dqdcos(i,imol)*dcostmp6)
-    call update_stress_qd(iox,3,3,-third*vtmp*dqdcos(i,imol)*dcostmp9)
-    call update_stress_qd(ih1,1,1,-third*vtmp*dqdcos(i,imol)*dcostmp1)
-    call update_stress_qd(ih1,1,2,-third*vtmp*dqdcos(i,imol)*dcostmp2)
-    call update_stress_qd(ih1,1,3,-third*vtmp*dqdcos(i,imol)*dcostmp3)
-    call update_stress_qd(ih1,2,1,-third*vtmp*dqdcos(i,imol)*dcostmp2)
-    call update_stress_qd(ih1,2,2,-third*vtmp*dqdcos(i,imol)*dcostmp5)
-    call update_stress_qd(ih1,2,3,-third*vtmp*dqdcos(i,imol)*dcostmp6)
-    call update_stress_qd(ih1,3,1,-third*vtmp*dqdcos(i,imol)*dcostmp3)
-    call update_stress_qd(ih1,3,2,-third*vtmp*dqdcos(i,imol)*dcostmp6)
-    call update_stress_qd(ih1,3,3,-third*vtmp*dqdcos(i,imol)*dcostmp9)
-    call update_stress_qd(ih2,1,1,-third*vtmp*dqdcos(i,imol)*dcostmp1)
-    call update_stress_qd(ih2,1,2,-third*vtmp*dqdcos(i,imol)*dcostmp2)
-    call update_stress_qd(ih2,1,3,-third*vtmp*dqdcos(i,imol)*dcostmp3)
-    call update_stress_qd(ih2,2,1,-third*vtmp*dqdcos(i,imol)*dcostmp2)
-    call update_stress_qd(ih2,2,2,-third*vtmp*dqdcos(i,imol)*dcostmp5)
-    call update_stress_qd(ih2,2,3,-third*vtmp*dqdcos(i,imol)*dcostmp6)
-    call update_stress_qd(ih2,3,1,-third*vtmp*dqdcos(i,imol)*dcostmp3)
-    call update_stress_qd(ih2,3,2,-third*vtmp*dqdcos(i,imol)*dcostmp6)
-    call update_stress_qd(ih2,3,3,-third*vtmp*dqdcos(i,imol)*dcostmp9)
+    call update_stress_qd(iox,1,1,third*vtmp*dqdcos(i,imol)*dcostmp1)
+    call update_stress_qd(iox,1,2,third*vtmp*dqdcos(i,imol)*dcostmp2)
+    call update_stress_qd(iox,1,3,third*vtmp*dqdcos(i,imol)*dcostmp3)
+    call update_stress_qd(iox,2,1,third*vtmp*dqdcos(i,imol)*dcostmp2)
+    call update_stress_qd(iox,2,2,third*vtmp*dqdcos(i,imol)*dcostmp5)
+    call update_stress_qd(iox,2,3,third*vtmp*dqdcos(i,imol)*dcostmp6)
+    call update_stress_qd(iox,3,1,third*vtmp*dqdcos(i,imol)*dcostmp3)
+    call update_stress_qd(iox,3,2,third*vtmp*dqdcos(i,imol)*dcostmp6)
+    call update_stress_qd(iox,3,3,third*vtmp*dqdcos(i,imol)*dcostmp9)
+    call update_stress_qd(ih1,1,1,third*vtmp*dqdcos(i,imol)*dcostmp1)
+    call update_stress_qd(ih1,1,2,third*vtmp*dqdcos(i,imol)*dcostmp2)
+    call update_stress_qd(ih1,1,3,third*vtmp*dqdcos(i,imol)*dcostmp3)
+    call update_stress_qd(ih1,2,1,third*vtmp*dqdcos(i,imol)*dcostmp2)
+    call update_stress_qd(ih1,2,2,third*vtmp*dqdcos(i,imol)*dcostmp5)
+    call update_stress_qd(ih1,2,3,third*vtmp*dqdcos(i,imol)*dcostmp6)
+    call update_stress_qd(ih1,3,1,third*vtmp*dqdcos(i,imol)*dcostmp3)
+    call update_stress_qd(ih1,3,2,third*vtmp*dqdcos(i,imol)*dcostmp6)
+    call update_stress_qd(ih1,3,3,third*vtmp*dqdcos(i,imol)*dcostmp9)
+    call update_stress_qd(ih2,1,1,third*vtmp*dqdcos(i,imol)*dcostmp1)
+    call update_stress_qd(ih2,1,2,third*vtmp*dqdcos(i,imol)*dcostmp2)
+    call update_stress_qd(ih2,1,3,third*vtmp*dqdcos(i,imol)*dcostmp3)
+    call update_stress_qd(ih2,2,1,third*vtmp*dqdcos(i,imol)*dcostmp2)
+    call update_stress_qd(ih2,2,2,third*vtmp*dqdcos(i,imol)*dcostmp5)
+    call update_stress_qd(ih2,2,3,third*vtmp*dqdcos(i,imol)*dcostmp6)
+    call update_stress_qd(ih2,3,1,third*vtmp*dqdcos(i,imol)*dcostmp3)
+    call update_stress_qd(ih2,3,2,third*vtmp*dqdcos(i,imol)*dcostmp6)
+    call update_stress_qd(ih2,3,3,third*vtmp*dqdcos(i,imol)*dcostmp9)
 #endif /* HEAT_CURRENT */
 
         virqdf = virqdf + &
