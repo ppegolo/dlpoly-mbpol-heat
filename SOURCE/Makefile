@@ -13,7 +13,7 @@
 #include machine/vulcan-xlf
 #include machine/cori-nersc-mpich-intel
 #include machine/urey-openmpi-gfortran
-#include machine/urey-openmpi-intel
+include machine/urey-openmpi-intel
 #include machine/comet-mvapich2-intel
 #include machine/stampede-mvapich2-intel
 #include machine/gordon-mvapich2-intel
@@ -25,7 +25,7 @@
 #include machine/dod-thunder-mpich-intel
 #include machine/dod-topaz-mpich-intel
 #include machine/ubuntu
-include machine/abulafia-gfortran
+#include machine/abulafia-gfortran
 
 # common variables
 CC  = gcc 
@@ -34,7 +34,7 @@ CPPFLAGS += -DMPI -DSTRESS  # -DDEBUG
 CPPFLAGS += -DHEAT_CURRENT  # for energy and forces decomposistion and 
                             # calculation of heat current
 #CPPFLAGS += -DHEAT_STRESS   # for stress decomposition (Possibly wrong!!!)
-CPPFLAGS += -DHEAT_CHECK    # check if the energy and stress decomposition sums up correctly
+#CPPFLAGS += -DHEAT_CHECK    # check if the energy and stress decomposition sums up correctly
 #CPPFLAGS += -DDO_2D_IR          # for 2D IR calculation 
 #CPPFLAGS += -DOPTORVIB -DOPT     # for geometry optimization and vibrational analysis - DOPT is MB-pol to account for ceiling
 #CPPFLAGS += -DDO_RECALC_DIP   # calculates DIPMOL_CMD, DIPIND_CMD for a given frame

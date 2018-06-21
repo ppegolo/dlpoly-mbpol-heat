@@ -13,7 +13,7 @@ module heatcurrent
   implicit none
   !
   real(8), dimension(1:3)             :: j1,jkin   ! atomic energy contribution to the heat current
-  real(8), dimension(1:3)             :: j2,jpot   ! stress contribution to the heat current
+  real(8), dimension(1:3)             :: j2,jpot,jpot_kspace   ! stress contribution to the heat current
   real(8), dimension(1:3)             :: jtot, jtot2   ! stress contribution to the heat current
   real(8), dimension(:,:), allocatable :: f_dot_v_old
   real(8), parameter :: junit=1.0d3  ! conversion form internal units
@@ -707,6 +707,7 @@ contains
     real(8) :: vtmp(3), eng, fij(3), rij(3)
     jkin = 0.d0
     jpot = 0.d0
+    jpot_kspace = 0.d0
     do iatm = 1, 3*mxatms/4
       vtmp = (/ vxx(iatm), vyy(iatm), vzz(iatm) /)
       eng = atomic_kinetic_energy(iatm)+atomic_potential_energy(iatm)
@@ -717,14 +718,14 @@ contains
         rij = (/xxx(iatm)-xxx(jatm),yyy(iatm)-yyy(jatm),zzz(iatm)-zzz(jatm)/)
         jpot = jpot + rij*dot_product(fij,vtmp)
       end do
-      jpot(1) = jpot(1) - (atomic_stress_ew1p(iatm,1,1)*vtmp(1) + atomic_stress_ew1p(iatm,1,2)*vtmp(2)&
+      jpot_kspace(1) = jpot_kspace(1) - (atomic_stress_ew1p(iatm,1,1)*vtmp(1) + atomic_stress_ew1p(iatm,1,2)*vtmp(2)&
       + atomic_stress_ew1p(iatm,1,3)*vtmp(3))
-      jpot(2) = jpot(2) - (atomic_stress_ew1p(iatm,1,2)*vtmp(1) + atomic_stress_ew1p(iatm,2,2)*vtmp(2)&
+      jpot_kspace(2) = jpot_kspace(2) - (atomic_stress_ew1p(iatm,1,2)*vtmp(1) + atomic_stress_ew1p(iatm,2,2)*vtmp(2)&
       + atomic_stress_ew1p(iatm,2,3)*vtmp(3))
-      jpot(3) = jpot(3) - (atomic_stress_ew1p(iatm,1,3)*vtmp(1) + atomic_stress_ew1p(iatm,2,3)*vtmp(2)&
+      jpot_kspace(3) = jpot_kspace(3) - (atomic_stress_ew1p(iatm,1,3)*vtmp(1) + atomic_stress_ew1p(iatm,2,3)*vtmp(2)&
       + atomic_stress_ew1p(iatm,3,3)*vtmp(3))
     end do
-    jtot2 = jkin + jpot
+    jtot2 = jkin + jpot + jpot_kspace
   end subroutine compute_heat_flux2
   !
   subroutine write_heat_flux2(time,bead_suffix)
@@ -735,6 +736,7 @@ contains
     write(flux_file,'(es12.5)') time
     write(flux_file,'(3es15.7)') jkin*junit
     write(flux_file,'(3es15.7)') jpot*junit
+    write(flux_file,'(3es15.7)') jpot_kspace*junit
     write(flux_file,'(3es15.7)') jtot2*junit
     close(flux_file)
   end subroutine write_heat_flux2
