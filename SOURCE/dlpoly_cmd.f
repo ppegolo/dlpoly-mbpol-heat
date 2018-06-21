@@ -3247,17 +3247,17 @@ c             Transform cartesian positions into normal mode positions.
      x            fxx,fyy,fzz,lcavity)
 
 #ifdef HEAT_CURRENT
-            if (idnode==0) call write_heat_flux(time,
-     x           bead_suffix)
-            if (idnode==0) call write_force_matrix
-     x                     (time,bead_suffix)
+            /* if (idnode==0) call write_heat_flux(time,
+     x           bead_suffix) */
+            /* if (idnode==0) call write_force_matrix
+     x                     (time,bead_suffix) */
             if ((.not. firststep) .and. idnode==0) then
               call write_heat_flux2(time,bead_suffix)
             end if
-            if (idnode==0) then
+            /* if (idnode==0) then
               call save_last_energy(nstep,time,
      x          bead_suffix)
-            end if
+            end if    */
 
 #ifdef HEAT_CHECK
             if (idnode==0) call write_check(time,
@@ -3477,19 +3477,19 @@ c             Transform cartesian positions into normal mode positions.
            if (lhead) then
 
 #ifdef HEAT_CURRENT
-            if (idnode==0) call write_heat_flux(time,
+            /* if (idnode==0) call write_heat_flux(time,
      x           bead_suffix)
             if (idnode==0) call write_force_matrix
-     x                     (time,bead_suffix)
+     x                     (time,bead_suffix) */
             if (idnode==0) call compute_stress(time,
      x        xxx, yyy, zzz, prsunt/stpvol)
             if (idnode==0) then
               call write_heat_flux2(time,bead_suffix)
             end if
-            if (idnode==0) then
+            /* if (idnode==0) then
               call save_last_energy(nstep,time,
      x          bead_suffix)
-            end if
+            end if */
 #ifdef HEAT_CHECK
             if (idnode==0) call write_check(time,
      x            conv_energy,prsunt/stpvol,bead_suffix)
